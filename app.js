@@ -21,7 +21,7 @@ app.load = function() {
 
   app.rotation = 0;
   
-  app.setMount("/stream.ogg");
+  app.setMount("stream.ogg");
   setInterval(function() {
     if (app.mount)
       app.updateMeta();
@@ -39,7 +39,7 @@ app.setMount = function(mount) {
       app.source.disconnect();
     app.mount = mount;
   
-    app.player = new Audio(app.SERVER + mount);
+    app.player = new Audio(app.SERVER + "/" + mount);
     app.player.crossOrigin = "anonymous";
   
     $(app.player).bind("canplay", function() {
@@ -61,7 +61,7 @@ app.updateMeta = function() {
   $.getJSON(app.SERVER + "/status-json.xsl", function(data) {
     var station;
     $.each(data.icestats.source, function(i, v) {
-      if (v.listenurl == app.SERVER + app.mount)
+      if (v.listenurl == app.SERVER + "/" + app.mount)
         station = v;
     });
     
