@@ -35,6 +35,21 @@ html, body {
   border-right: 1px solid white;
 }
 
+.station {
+  display: block;
+  text-decoration: none;
+  color: #fff;
+  padding: 10px;
+}
+
+.station-name {
+  font-size: 150%;
+}
+
+.station:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
 .station #template {
   display: none;
 }

@@ -37,6 +37,7 @@ app.load = function() {
   }, 300);
 
   // Update the metadata and station selection
+  app.updateData();
   setInterval(app.updateData, 5000);
 
   $("#meta").on("click", function() {
@@ -79,8 +80,13 @@ app.updateData = function() {
       ids.push(id);
 
       var el = $(".station#" + id);
-      if (!el)
-        el = $(".station#template").clone().attr("id", id).appendTo("#stations");
+      if (el.length == 0) {
+        el = $(".station#template")
+          .clone()
+          .attr("id", id)
+          .appendTo("#stations");
+      }
+      el.attr("href", "#" + mount);
       el.find(".station-name").text(v.server_name);
 
       if (mount == app.mount)
