@@ -71,17 +71,31 @@ app.updateData = function() {
   $.getJSON(app.SERVER + "/status-json.xsl", function(data) {
     var current;
 
+    var ids = [];
+
     $.each(data.icestats.source, function(i, v) {
       var mount = v.listenurl.match(/\/([^\/]+)$/)[1];
       var id = mount.replace(/[^\w]/g, "");
+      ids.push(id);
 
-      var el = $("#stations #" + id);
+      var el = $(".station#" + id);
       if (!el)
-        el = $("#template").clone().attr("id", id).appendTo("#stations");
+        el = $(".station#template").clone().attr("id", id).appendTo("#stations");
       el.find(".station-name").text(v.server_name);
 
       if (mount == app.mount)
         current = v;
+    });
+
+    $(".station").each(function(i, v) {
+      var el = $(v);
+      var id = el.attr("id");
+
+      if (ids.indexOf(id) == -1 && id != "template") {
+        el.fadeOut(function() {
+          el.remove();
+        });
+      }
     });
     
     if (!current && app.mount != "") {
