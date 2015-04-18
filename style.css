@@ -20,6 +20,7 @@ html, body {
   margin: auto;
 }
 
+
 #stations {
   width: 100%;
   max-width: 500px;
@@ -42,15 +43,21 @@ html, body {
   padding: 10px;
 }
 
+.station-listeners {
+  font-size: 150%;
+  float: left;
+  padding-right: 20px;
+}
+
 .station-name {
   font-size: 150%;
 }
 
-.station:hover {
+.station:hover, .station.current {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-.station #template {
+.station#template {
   display: none;
 }
 

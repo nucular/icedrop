@@ -40,7 +40,7 @@ app.load = function() {
   app.updateData();
   setInterval(app.updateData, 5000);
 
-  $("#meta").on("click", function() {
+  $("#meta").on("click", function(e) {
     $("#stations").slideToggle();
   });
 }
@@ -84,13 +84,22 @@ app.updateData = function() {
         el = $(".station#template")
           .clone()
           .attr("id", id)
-          .appendTo("#stations");
+          .appendTo("#stations")
+          .on("click", function(e) {
+            $(".station").removeClass("current");
+            $(this).addClass("current");
+          });
       }
       el.attr("href", "#" + mount);
       el.find(".station-name").text(v.server_name);
+      el.find(".station-listeners").text(v.listeners);
+      el.find(".station-title").text(v.title || "Unknown");
+      el.find(".station-artist").text(v.artist || "Unknown");
 
-      if (mount == app.mount)
+      if (mount == app.mount) {
         current = v;
+        el.addClass("current");
+      }
     });
 
     $(".station").each(function(i, v) {
