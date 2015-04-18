@@ -92,6 +92,7 @@ html, body {
 #meta-right {
   float: right;
   line-height: 80%;
+  overflow: hidden;
 }
 
 #meta-artist {

@@ -8,13 +8,7 @@ app.SERVER = "http://vps.starcatcher.us:9001";
 // Set up WebAudio, bind events and intervals
 app.load = function() {
   app.mount = "";
-
-  // Offscreen rendering
-  app.offcanvas = document.createElement("canvas");
-  app.offcanvas.width = app.canvas.width;
-  app.offcanvas.height = app.canvas.height;
-  app.offctx = app.offcanvas.getContext("2d");
-  app.offctx.globalCompositeOperation = "lighter";
+  app.loadPreset();
   
   // Initialize WebAudio
   app.context = new AudioContext();
@@ -34,11 +28,20 @@ app.load = function() {
   
   // Update the hash
   setInterval(function() {
-    var hmount = window.location.hash.substr(1);
+    var m = window.location.hash.match(/^#([^:]+)(?::(.+))?$/);
+    var hmount = m.length >= 2 ? m[1] : "";
+    var hpreset = m.length >= 3 ? m[2] : "";
+
     if (hmount == "" && app.mount != "")
       app.setMount();
     else if (app.mount != hmount)
       app.setMount(hmount);
+
+    if (hpreset == "") {
+      app.loadPreset(choiceFromObject(app.presets));
+    } else {
+      app.loadPreset(app.presets[hpreset]);
+    }
   }, 300);
 
   // Update the metadata and station selection
@@ -49,6 +52,62 @@ app.load = function() {
   $("#meta").on("click", function(e) {
     $("#stations").slideToggle();
   });
+}
+
+// Load a preset from an object
+app.loadPreset = function(obj) {
+  if (!obj)
+    obj = choiceFromObject(app.presets);
+  app.preset = obj;
+  if (obj.hasOwnProperty("load"))
+    obj.load();
+}
+
+// Load a preset from a JSON string
+app.loadPresetFromJSON = function(json) {
+  var obj;
+  try {
+    obj = JSON.parse(filtersString, function (k, v) {
+      if (v 
+          && typeof v === "string" 
+          && v.substr(0,8) == "function") {
+          var startBody = v.indexOf('{') + 1;
+          var endBody = v.lastIndexOf('}');
+          var startArgs = v.indexOf('(') + 1;
+          var endArgs = v.indexOf(')');
+   
+          return new Function(v.substring(startArgs, endArgs),
+            v.substring(startBody, endBody));
+      }
+      return v;
+    });
+  } catch (e) {
+    console.error("Error while parsing preset JSON", e);
+  }
+  app.loadPreset(new Preset(obj));
+}
+
+// Load a preset from a Icecast description string
+app.loadPresetFromDescription = function(desc) {
+  var m = desc.match(/icedrop:(.|\n)+/m);
+  if (!m) return;
+  m = m[1];
+
+  if (m.match(/\w+/)) {
+    // Load preset by name
+    loadPreset(app.presets[m]);
+  } else if (m.match(/^(?:https?:\/\/)?(?:[\w]+\.)(?:\.?[\w]{2,})+$/)) {
+    // Load preset from URL
+    $.get(m, function(data) {
+      app.loadPresetFromJSON(data);
+    }, function() {
+      // Error, load random preset
+      loadPreset();
+    });
+  } else {
+    // Load preset from direct JSON
+    app.loadPresetFromJSON(m);
+  }
 }
 
 // Set the current station by mount point
@@ -64,7 +123,9 @@ app.setMount = function(mount) {
       app.player.play();
 
       $("#stations").slideUp();
-      app.updateData();
+      app.updateData(function(station, data) {
+        //
+      });
     }
   } else {
     if (app.mount != "") {
@@ -80,7 +141,8 @@ app.setMount = function(mount) {
 }
 
 // Request data from the Icecast API and update everything that uses it
-app.updateData = function() {
+// The current station and the full data will be passed to the callback
+app.updateData = function(cb) {
   $.getJSON(app.SERVER + "/status-json.xsl", function(data) {
     var current, ids = [];
 
@@ -141,6 +203,9 @@ app.updateData = function() {
       $("#meta-title").text(current.title || "Unknown");
       $("#meta-artist").text(current.artist || "Unknown");
     }
+
+    if (cb)
+      cb(current, data.icestats);
   });
 }
 
@@ -148,52 +213,23 @@ app.updateData = function() {
 app.resize = function(w, h) {
   app.offcanvas.width = w;
   app.offcanvas.height = h;
+
+  if (app.preset.resize)
+    app.preset.resize(w, h);
 }
 
 // Get the current frequency- and time-domain data
 app.update = function(dt) {
   app.analyser.getByteFrequencyData(app.freqdata);
   app.analyser.getByteTimeDomainData(app.timedata);
+
+  if (app.preset.update)
+    app.preset.update(dt);
 }
 
 // Draw the visualization
 app.draw = function() {
   var w = app.canvas.width, h = app.canvas.height;
-
-  // Clear the offscreen canvas
-  app.offctx.clearRect(0, 0, w, h);
-
-  var fcount = app.analyser.frequencyBinCount;
-  var tcount = app.analyser.fftSize;
-
-  // Frequency average used for rotation later
-  var avg = 0;
-
-  for (var i = 0; i < fcount; i++) {
-    var f = app.freqdata[i] / 255;
-    var t = app.timedata[Math.floor((i / fcount) * tcount)] / 255;
-
-    if (i < fcount / 2)
-      avg += f * f;
-    else
-      avg -= f * f;
-    
-    // Draw the rectangle
-    app.offctx.fillStyle = "hsl(" + (48+(f * 164)) + ", 100%, " + (t * 100) + "%)";
-    app.offctx.fillRect((i / fcount) * w, h - (f * h), w / fcount, f * (h / 5));
-    app.offctx.fillRect(w - (i / fcount) * w, f * h, w / fcount, -f * (h / 5));
-  }
-
-  // Translate the contents of the screen, leave behind a trail
-  app.ctx.save();
-  app.ctx.translate(w/2, h/2);
-  app.ctx.rotate((avg / (fcount / 2)) / 70);
-  app.ctx.scale(0.99, 0.99);
-  app.ctx.translate(-w/2, -h/2);
-
-  app.ctx.drawImage(app.canvas, 0, 0);
-  app.ctx.restore();
-
-  // Draw the off-screen canvas untranslated to the screen
-  app.ctx.drawImage(app.offcanvas, 0, 0);
+  if (app.preset.draw)
+    app.preset.draw(w, h);
 }
