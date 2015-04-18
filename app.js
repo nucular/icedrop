@@ -178,7 +178,7 @@ app.draw = function() {
     else
       avg -= f * f;
     
-    // Draw the 
+    // Draw the rectangle
     app.offctx.fillStyle = "hsl(" + (48+(f * 164)) + ", 100%, " + (t * 100) + "%)";
     app.offctx.fillRect((i / fcount) * w, h - (f * h), w / fcount, f * (h / 5));
     app.offctx.fillRect(w - (i / fcount) * w, f * h, w / fcount, -f * (h / 5));
