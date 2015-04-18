@@ -20,21 +20,36 @@ app.load = function() {
   app.timedata = new Uint8Array(app.analyser.fftSize);
 
   app.rotation = 0;
+  app.mount = "";
   
-  app.setMount("stream.ogg");
+  if (window.location.hash != "")
+    app.setMount(window.location.hash.substr(1));
+
+  // Update the hash
   setInterval(function() {
-    if (app.mount)
-      app.updateMeta();
-    else
-      app.updateStationSelect();
-  }, 5000);
+    var hmount = window.location.hash.substr(1);
+    console.log(app.mount, hmount);
+    if (app.mount) {
+      if (hmount == "")
+        app.setMount();
+      else if (app.mount != hmount)
+        app.setMount(hmount);
+    } else {
+      if (hmount != "")
+        app.setMount(hmount);
+    }
+  }, 300);
+
+  // Update the metadata and station selection
+  setInterval(app.updateData, 5000);
+
+  $("#meta").on("click", function() {
+    $("#stations").slideToggle();
+  });
 }
 
 app.setMount = function(mount) {
   if (mount) {
-    $("#stationselect").hide();
-    $("#meta").show();
-    
     if (app.source)
       app.source.disconnect();
     app.mount = mount;
@@ -47,39 +62,36 @@ app.setMount = function(mount) {
       app.source.connect(app.analyser);
       app.player.play();
     });
-  
-    app.updateMeta();
   } else {
-    $("#stationselect").show();
-    $("#meta").hide();
-    
-    app.updateStationSelect()
   }
+  app.updateData();
 }
 
-app.updateMeta = function() {
+app.updateData = function() {
   $.getJSON(app.SERVER + "/status-json.xsl", function(data) {
-    var station;
+    var current;
+
     $.each(data.icestats.source, function(i, v) {
-      if (v.listenurl == app.SERVER + "/" + app.mount)
-        station = v;
+      var mount = v.listenurl.match(/\/([^\/]+)$/)[1];
+      var id = mount.replace(/[^\w]/g, "");
+
+      var el = $("#stations #" + id);
+      if (!el)
+        el = $("#template").clone().attr("id", id).appendTo("#stations");
+      el.find(".station-name").text(v.server_name);
+
+      if (v.mount == app.mount)
+        current = v;
     });
     
-    if (!station) {
-      // station disconnected?
+    if (!current && app.mount != "") {
+      // station probably disconnected
       app.setMount();
-      return;
+    } else if (current) {
+      $("#meta-listeners").text(current.listeners);
+      $("#meta-title").text(current.title || "Unknown");
+      $("#meta-artist").text(current.artist || "Unknown");
     }
-    
-    $("#meta-listeners").text(station.listeners);
-    $("#meta-title").text(station.title || "Unknown");
-    $("#meta-artist").text(station.artist || "Unknown");
-  });
-}
-
-app.updateStationSelect = function() {
-  $.getJSON(app.SERVER + "/status-json.xsl", function(data) {
-    //
   });
 }
 

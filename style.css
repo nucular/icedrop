@@ -20,14 +20,27 @@ html, body {
   margin: auto;
 }
 
-#mountselect {
+#stations {
   width: 100%;
   max-width: 500px;
-  margin-left: auto; margin-right: auto;
+  height: calc(100% - 90px);
+
+  position: fixed;
+  left: 0px;
+  bottom: 70px;
   padding: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1;
 }
 
+.station #template {
+  display: none;
+}
+
+
 #meta {
+  height: 50px;
+  cursor: pointer;
   font-size: 200%;
   
   position: fixed;
