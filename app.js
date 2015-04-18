@@ -15,6 +15,11 @@ app.load = function() {
   app.analyser = app.context.createAnalyser();
   app.analyser.fftSize = 1024;
   app.analyser.connect(app.context.destination);
+
+  app.player = new Audio();
+  app.player.crossOrigin = "anonymous";
+  app.source = app.context.createMediaElementSource(app.player);
+  app.source.connect(app.analyser);
   
   app.freqdata = new Uint8Array(app.analyser.frequencyBinCount);
   app.timedata = new Uint8Array(app.analyser.fftSize);
@@ -22,22 +27,13 @@ app.load = function() {
   app.rotation = 0;
   app.mount = "";
   
-  if (window.location.hash != "")
-    app.setMount(window.location.hash.substr(1));
-
   // Update the hash
   setInterval(function() {
     var hmount = window.location.hash.substr(1);
-    console.log(app.mount, hmount);
-    if (app.mount) {
-      if (hmount == "")
-        app.setMount();
-      else if (app.mount != hmount)
-        app.setMount(hmount);
-    } else {
-      if (hmount != "")
-        app.setMount(hmount);
-    }
+    if (hmount == "" && app.mount != "")
+      app.setMount();
+    else if (app.mount != hmount)
+      app.setMount(hmount);
   }, 300);
 
   // Update the metadata and station selection
@@ -50,21 +46,25 @@ app.load = function() {
 
 app.setMount = function(mount) {
   if (mount) {
-    if (app.source)
-      app.source.disconnect();
-    app.mount = mount;
-  
-    app.player = new Audio(app.SERVER + "/" + mount);
-    app.player.crossOrigin = "anonymous";
-  
-    $(app.player).bind("canplay", function() {
-      app.source = app.context.createMediaElementSource(app.player);
-      app.source.connect(app.analyser);
+    if (app.mount != mount) {
+      app.mount = mount;
+    
+      app.player.setAttribute("src", app.SERVER + "/" + mount);
+      app.player.load();
       app.player.play();
-    });
+
+      $("#stations").slideUp();
+      app.updateData();
+    }
   } else {
+    if (app.mount != "") {
+      app.mount = "";
+      app.player.pause();
+
+      $("#stations").slideDown();
+      app.updateData();
+    }
   }
-  app.updateData();
 }
 
 app.updateData = function() {
@@ -80,12 +80,13 @@ app.updateData = function() {
         el = $("#template").clone().attr("id", id).appendTo("#stations");
       el.find(".station-name").text(v.server_name);
 
-      if (v.mount == app.mount)
+      if (mount == app.mount)
         current = v;
     });
     
     if (!current && app.mount != "") {
       // station probably disconnected
+      console.log("Station disconnected");
       app.setMount();
     } else if (current) {
       $("#meta-listeners").text(current.listeners);
