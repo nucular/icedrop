@@ -8,7 +8,6 @@ app.SERVER = "http://vps.starcatcher.us:9001";
 // Set up WebAudio, bind events and intervals
 app.load = function() {
   app.mount = "";
-  app.loadPreset();
   
   // Initialize WebAudio
   app.context = new AudioContext();
@@ -27,26 +26,16 @@ app.load = function() {
   app.timedata = new Uint8Array(app.analyser.fftSize);
   
   // Update the hash
-  setInterval(function() {
-    var m = window.location.hash.match(/^#([^:]+)(?::(.+))?$/);
-    var hmount = m.length >= 2 ? m[1] : "";
-    var hpreset = m.length >= 3 ? m[2] : "";
-
-    if (hmount == "" && app.mount != "")
-      app.setMount();
-    else if (app.mount != hmount)
-      app.setMount(hmount);
-
-    if (hpreset == "") {
-      app.loadPreset(choiceFromObject(app.presets));
-    } else {
-      app.loadPreset(app.presets[hpreset]);
-    }
-  }, 300);
+  app.updateHash();
+  setInterval(app.updateHash, 300);
 
   // Update the metadata and station selection
   app.updateData();
   setInterval(app.updateData, 5000);
+
+  // Load a preset if needed
+  if (!app.presetname)
+    app.loadPreset();
 
   // Hide the station selector
   $("#meta").on("click", function(e) {
@@ -54,12 +43,36 @@ app.load = function() {
   });
 }
 
+app.updateHash = function() {
+  var m = window.location.hash.match(/^#([^:]+)?(?::(.+))?$/);
+  if (!m)
+    return;
+
+  var hmount = m.length >= 2 ? m[1] : "";
+  var hpreset = m.length >= 3 ? m[2] : "";
+
+  if (hmount == "" && app.mount != "")
+    app.setMount();
+  else if (app.mount != hmount)
+    app.setMount(hmount);
+
+  if (hpreset != "" && hpreset != "station") {
+    var n = chooseProperty(app.presets);
+    app.presetname = n;
+    app.loadPreset(app.presets[hpreset]);
+  }
+}
+
 // Load a preset from an object
 app.loadPreset = function(obj) {
-  if (!obj)
-    obj = choiceFromObject(app.presets);
+  if (!obj) {
+    var n = chooseProperty(app.presets);
+    app.presetname = n;
+    window.location.hash = "#" + app.mount + ":" + n;
+    obj = app.presets[n];
+  }
   app.preset = obj;
-  if (obj.hasOwnProperty("load"))
+  if (obj.hasOwnProperty("load") && obj.load)
     obj.load();
 }
 
@@ -83,7 +96,10 @@ app.loadPresetFromJSON = function(json) {
     });
   } catch (e) {
     console.error("Error while parsing preset JSON", e);
+    app.loadPreset();
   }
+  app.presetname = "station";
+  window.location.hash = "#" + app.mount + ":station";
   app.loadPreset(new Preset(obj));
 }
 
@@ -124,7 +140,8 @@ app.setMount = function(mount) {
 
       $("#stations").slideUp();
       app.updateData(function(station, data) {
-        //
+        if (station.hasOwnProperty("server_description"))
+          app.loadPresetFromDescription(station.server_description);
       });
     }
   } else {
@@ -211,9 +228,6 @@ app.updateData = function(cb) {
 
 // Viewport has been resized
 app.resize = function(w, h) {
-  app.offcanvas.width = w;
-  app.offcanvas.height = h;
-
   if (app.preset.resize)
     app.preset.resize(w, h);
 }

@@ -3,6 +3,7 @@
 if (typeof app == "undefined")
   var app = {};
 
+// Keep the contexts separate
 function Preset(base) {
   this.load = base.load;
   this.draw = base.draw;
@@ -96,6 +97,25 @@ app.presets = {
       app.ctx.fillRect(0, 0, w, h);
 
       app.ctx.drawImage(this.offcanvas, 0, 0);
+    }
+  }),
+
+  simple: new Preset({
+    draw: function(w, h) {
+      app.ctx.clearRect(0, 0, w, h);
+
+      var fcount = app.analyser.frequencyBinCount;
+      var tcount = app.analyser.fftSize;
+
+      app.ctx.strokeStyle = "#fff";
+      app.ctx.beginPath();
+      app.ctx.moveTo(0, h / 2);
+      for (var i = 0; i < tcount; i++) {
+        var f = app.timedata[i] / 255;
+        
+        app.ctx.lineTo((i / tcount) * w, f * h);
+      }
+      app.ctx.stroke();
     }
   })
 }
