@@ -2,7 +2,6 @@ if (typeof app == "undefined")
   var app = {};
 
 app.SERVER = "http://vps.starcatcher.us:9001";
-app.FPS = 60;
 
 app.load = function() {
   app.fxcanvas = document.createElement("canvas");
