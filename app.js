@@ -147,7 +147,7 @@
 
         // Try to load a preset if existant
         app.updateData(function(station, data) {
-          if (station.hasOwnProperty("server_description")) {
+          if (station && station.hasOwnProperty("server_description")) {
             var success = app.loadPresetFromDescription(station.server_description,
               function() {
                 // Error or not even requested, load random preset instead
