@@ -16,15 +16,11 @@
   app.presets = {
     deflt: new Preset({
       load: function() {
-        this.offcanvas = document.createElement("canvas");
-        this.offcanvas.width = app.canvas.width;
-        this.offcanvas.height = app.canvas.height;
-        this.offctx = this.offcanvas.getContext("2d");
-        this.offctx.globalCompositeOperation = "lighter";
+        app.offctx.globalCompositeOperation = "lighter";
       },
       draw: function(w, h) {
         // Clear the offscreen canvas
-        this.offctx.clearRect(0, 0, w, h);
+        app.offctx.clearRect(0, 0, w, h);
 
         var fcount = app.analyser.frequencyBinCount;
         var tcount = app.analyser.fftSize;
@@ -42,9 +38,9 @@
             avg -= f * f;
 
           // Draw the rectangle
-          this.offctx.fillStyle = "hsl(" + (48+(f * 164)) + ", 100%, " + (t * 100) + "%)";
-          this.offctx.fillRect((i / fcount) * w, h - (f * h), w / fcount, f * (h / 5));
-          this.offctx.fillRect(w - (i / fcount) * w, f * h, w / fcount, -f * (h / 5));
+          app.offctx.fillStyle = "hsl(" + (48+(f * 164)) + ", 100%, " + (t * 100) + "%)";
+          app.offctx.fillRect((i / fcount) * w, h - (f * h), w / fcount, f * (h / 5));
+          app.offctx.fillRect(w - (i / fcount) * w, f * h, w / fcount, -f * (h / 5));
         }
 
         // Translate the contents of the screen, leave behind a trail
@@ -58,20 +54,16 @@
         app.ctx.restore();
 
         // Draw the off-screen canvas untranslated to the screen
-        app.ctx.drawImage(this.offcanvas, 0, 0);
+        app.ctx.drawImage(app.offcanvas, 0, 0);
       }
     }),
 
     ristovski: new Preset({
       load: function() {
-        this.offcanvas = document.createElement("canvas");
-        this.offcanvas.width = app.canvas.width;
-        this.offcanvas.height = app.canvas.height;
-        this.offctx = this.offcanvas.getContext("2d");
-        this.offctx.globalCompositeOperation = "lighter";
+        app.offctx.globalCompositeOperation = "lighter";
       },
       draw: function(w, h) {
-        this.offctx.clearRect(0, 0, w, h);
+        app.offctx.clearRect(0, 0, w, h);
 
         var fcount = app.analyser.frequencyBinCount;
         var tcount = app.analyser.fftSize;
@@ -80,12 +72,12 @@
           var f = app.freqdata[i] / 255;
           var t = app.timedata[Math.floor((i / fcount) * tcount)] / 255;
 
-          this.offctx.fillStyle = "hsl(" + (360-Math.exp(f * 9)) + ", 100%," + (t * 100) + "%)";
-          this.offctx.fillRect((i / fcount) * w, h - (f * (h)), w / fcount, f * (h / 40));
+          app.offctx.fillStyle = "hsl(" + (360-Math.exp(f * 9)) + ", 100%," + (t * 100) + "%)";
+          app.offctx.fillRect((i / fcount) * w, h - (f * (h)), w / fcount, f * (h / 40));
 
 
-          this.offctx.fillRect(w - (i / fcount) * w, f * (h), w / fcount, -f * (h / 40));
-          this.offctx.fillRect(w - (i / fcount) / w, f * (h), w / fcount, -f * (h / 40));
+          app.offctx.fillRect(w - (i / fcount) * w, f * (h), w / fcount, -f * (h / 40));
+          app.offctx.fillRect(w - (i / fcount) / w, f * (h), w / fcount, -f * (h / 40));
 
         }
 
@@ -99,7 +91,7 @@
         app.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         app.ctx.fillRect(0, 0, w, h);
 
-        app.ctx.drawImage(this.offcanvas, 0, 0);
+        app.ctx.drawImage(app.offcanvas, 0, 0);
       }
     }),
 

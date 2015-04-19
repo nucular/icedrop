@@ -9,6 +9,12 @@
   app.load = function() {
     app.mount = "";
 
+    // Off-screen canvas
+    app.offcanvas = document.createElement("canvas");
+    app.offcanvas.width = app.canvas.width;
+    app.offcanvas.height = app.canvas.height;
+    app.offctx = app.offcanvas.getContext("2d");
+
     // Initialize WebAudio
     app.context = new AudioContext();
 
@@ -228,6 +234,9 @@
 
   // Viewport has been resized
   app.resize = function(w, h) {
+    app.offcanvas.width = w;
+    app.offcanvas.height = h;
+
     if (app.preset.resize)
       app.preset.resize(w, h);
   };
