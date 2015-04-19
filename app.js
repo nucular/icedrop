@@ -39,9 +39,8 @@
     app.updateData();
     setInterval(app.updateData, 5000);
 
-    // Load a preset if needed
-    if (!app.presetname)
-      app.loadPreset();
+    // Load a random preset
+    app.loadPreset();
 
     // Hide the station selector
     $("#meta").on("click", function(e) {
@@ -49,32 +48,20 @@
     });
   };
 
+  // Set the station mount if the hash was modified
   app.updateHash = function() {
-    var m = window.location.hash.match(/^#([^:]+)?(?::(.+))?$/);
-    if (!m)
-      return;
-
-    var hmount = m.length >= 2 ? m[1] : "";
-    var hpreset = m.length >= 3 ? m[2] : "";
+    var hmount = window.location.hash.substr(1);
 
     if (hmount == "" && app.mount != "")
       app.setMount();
     else if (app.mount != hmount)
       app.setMount(hmount);
-
-    if (hpreset != "" && hpreset != "station") {
-      var n = chooseProperty(app.presets);
-      app.presetname = n;
-      app.loadPreset(app.presets[hpreset]);
-    }
   };
 
   // Load a preset from an object
   app.loadPreset = function(obj) {
     if (!obj) {
       var n = chooseProperty(app.presets);
-      app.presetname = n;
-      window.location.hash = "#" + app.mount + ":" + n;
       obj = app.presets[n];
     }
     app.preset = obj;
@@ -86,7 +73,7 @@
   app.loadPresetFromJSON = function(json) {
     var obj;
     try {
-      obj = JSON.parse(filtersString, function (k, v) {
+      obj = JSON.parse(json, function (k, v) {
         if (v
             && typeof v === "string"
             && v.substr(0,8) == "function") {
@@ -102,33 +89,40 @@
       });
     } catch (e) {
       console.error("Error while parsing preset JSON", e);
-      app.loadPreset();
+      return false;
     }
-    app.presetname = "station";
-    window.location.hash = "#" + app.mount + ":station";
-    app.loadPreset(new Preset(obj));
+    app.loadPreset(new app.Preset(obj));
+    return true;
   };
 
   // Load a preset from a Icecast description string
-  app.loadPresetFromDescription = function(desc) {
-    var m = desc.match(/icedrop:(.|\n)+/m);
-    if (!m) return;
+  app.loadPresetFromDescription = function(desc, failcb) {
+    var m = desc.match(/icedrop:(.+|\n+)/m);
+    if (!m) {
+      failcb();
+      return;
+    }
     m = m[1];
 
-    if (m.match(/\w+/)) {
+    if (m.match(/^\w+$/)) {
       // Load preset by name
-      loadPreset(app.presets[m]);
+      console.log("Station requested loading preset by name:", m);
+      if (app.presets.hasOwnProperty(m))
+        app.loadPreset(app.presets[m]);
+      else
+        failcb();
     } else if (m.match(/^(?:https?:\/\/)?(?:[\w]+\.)(?:\.?[\w]{2,})+$/)) {
       // Load preset from URL
+      console.log("Station requested loading preset from URL:", m);
       $.get(m, function(data) {
-        app.loadPresetFromJSON(data);
-      }, function() {
-        // Error, load random preset
-        loadPreset();
-      });
+        if (!app.loadPresetFromJSON(data))
+          failcb();
+      }, failcb);
     } else {
       // Load preset from direct JSON
-      app.loadPresetFromJSON(m);
+      console.log("Station requested loading preset from JSON:", m);
+      if (!app.loadPresetFromJSON(m))
+        failcb();
     }
   };
 
@@ -144,10 +138,22 @@
         app.player.load();
         app.player.play();
 
+        // Update the hash
+        var hmount = window.location.hash.substr(1);
+        if (hmount != mount)
+          window.location.hash = "#" + mount;
+
         $("#stations").slideUp();
+
+        // Try to load a preset if existant
         app.updateData(function(station, data) {
-          if (station.hasOwnProperty("server_description"))
-            app.loadPresetFromDescription(station.server_description);
+          if (station.hasOwnProperty("server_description")) {
+            var success = app.loadPresetFromDescription(station.server_description,
+              function() {
+                // Error or not even requested, load random preset instead
+                app.loadPreset();
+              });
+          }
         });
       }
     } else {
@@ -156,6 +162,11 @@
 
         app.mount = "";
         app.player.pause();
+
+        // Update the hash
+        var hmount = window.location.hash.substr(1);
+        if (hmount != "")
+          window.location.hash = "";
 
         $("#stations").slideDown();
         app.updateData();
@@ -182,7 +193,7 @@
           el = $(".station#template")
             .clone()
             .attr("id", id)
-            .appendTo("#stations")
+            .appendTo("#stations").hide().fadeIn()
             .on("click", function(e) {
               $(".station").removeClass("current");
               $(this).addClass("current");
@@ -218,8 +229,12 @@
       if (!current && app.mount != "") {
         // Station probably disconnected
         console.log("Current station disconnected");
+        $(".station.current").fadeOut(function() {
+          $(this).remove();
+        });
         app.setMount();
-        updateData();
+        app.updateData();
+
       } else if (current) {
         // Update current station informations
         $("#meta-listeners").text(current.listeners);
