@@ -39,14 +39,14 @@
 
           // Draw the rectangle
           app.offctx.fillStyle = "hsl(" + (48+(f * 164)) + ", 100%, " + (t * 100) + "%)";
-          app.offctx.fillRect((i / fcount) * w, h - (f * h), w / fcount, f * (h / 5));
-          app.offctx.fillRect(w - (i / fcount) * w, f * h, w / fcount, -f * (h / 5));
+          app.offctx.fillRect((i / fcount) * w, h - (f * (h / 4)), w / fcount, f * (h / 4));
+          app.offctx.fillRect(w - (i / fcount) * w, f * (h / 4), w / fcount, -f * (h / 4));
         }
 
         // Translate the contents of the screen, leave behind a trail
         app.ctx.save();
         app.ctx.translate(w/2, h/2);
-        app.ctx.rotate((avg / (fcount / 2)) / 70);
+        app.ctx.rotate((avg / (fcount / 2)) / 10);
         app.ctx.scale(0.99, 0.99);
         app.ctx.translate(-w/2, -h/2);
 
@@ -111,6 +111,55 @@
           app.ctx.lineTo((i / tcount) * w, f * h);
         }
         app.ctx.stroke();
+      }
+    }),
+
+    freq3d: new Preset({
+      draw: function(w, h) {
+        app.offctx.clearRect(0, 0, w, h);
+        app.offctx.translate(w / 2, h / 2);
+
+        var fcount = app.analyser.frequencyBinCount;
+        var tcount = app.analyser.fftSize;
+
+        var side = Math.sqrt(app.analyser.frequencyBinCount);
+        var mfcount = Math.floor(fcount / side) * side;
+
+        for (var i = 0; i < mfcount; i++) {
+          var f = app.freqdata[i] / 255;
+          var t = app.timedata[Math.floor((i / fcount) * tcount)] / 255;
+
+          var x = (i % side) / side;
+          var y = f;
+          var z = 1 - (Math.floor(i / side) / side);
+          var rw = (1.5 - z) * 5;
+
+          // Translate a bit
+          x = (x - 0.5) / 2;
+          y = (y - 0.5) / 2 + (z / 4);
+          z = (z + 0.5) * 2;
+
+          // Project
+          var px = (x * w) / z;
+          var py = (-y * h) / z;
+
+          app.offctx.fillStyle = "hsl(" + (48+(i/fcount * 164)) + ", 100%, " + (t * 100) + "%)";
+          app.offctx.fillRect(px, py, rw, rw / 2);
+        }
+
+        app.offctx.translate(-w / 2, -h / 2);
+
+        app.ctx.save();
+        app.ctx.translate(w/2, h/2);
+        app.ctx.scale(0.99, 0.99);
+        app.ctx.translate(-w/2, -h/2);
+        app.ctx.drawImage(app.canvas, 0, 0);
+        app.ctx.restore();
+
+        app.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        app.ctx.fillRect(0, 0, w, h);
+
+        app.ctx.drawImage(app.offcanvas, 0, 0);
       }
     })
   };
