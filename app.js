@@ -191,7 +191,7 @@
 
         // Update station informations
         el.attr("href", "#" + mount);
-        el.find(".station-name").text(v.server_name);
+        el.find(".station-name").text(v.server_name || ("/" + mount));
         el.find(".station-listeners").text(v.listeners);
         el.find(".station-title").text(v.title || "Unknown");
         el.find(".station-artist").text(v.artist || "Unknown");
