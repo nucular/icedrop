@@ -64,7 +64,7 @@
     if (state) {
       $({
         "alpha": 0,
-        "width": $("#meta-inner").width() + 20
+        "width": $("#meta-inner").width() + 10
       }).animate({
         "alpha": 1,
         "width": 500
