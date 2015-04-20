@@ -76,6 +76,10 @@
           });
         },
         complete: function() {
+          $("#meta").css({
+            "border-right-color": "rgba(255,255,255,1)",
+            "width": 500
+          });
           $("#stations").slideDown();
         }
       });
@@ -94,6 +98,9 @@
             $("#meta").css({
               "border-right-color": "rgba(255,255,255," + this.alpha + ")",
             });
+          },
+          complete: function() {
+            $("#meta").css("border-right-color", "rgba(255,255,255,0)");
           }
         });
       });
