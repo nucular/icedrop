@@ -62,18 +62,39 @@
       state = !$("#stations").is(":visible");
     }
     if (state) {
-      $("#meta")
-        .css("border-right", "1px solid #fff")
-        .animate({"width": 500}, function() {
+      $({
+        "alpha": 0,
+        "width": $("#meta-inner").width() + 20
+      }).animate({
+        "alpha": 1,
+        "width": 500
+      }, {
+        step: function() {
+          $("#meta").css({
+            "border-right-color": "rgba(255,255,255," + this.alpha + ")",
+            "width": this.width
+          });
+        },
+        complete: function() {
           $("#stations").slideDown();
-        });
+        }
+      });
+
     } else {
       $("#stations").slideUp(function() {
-        $("#meta").animate({"width": $("#meta-inner").width()}, function() {
-          $(this).css({
-            "width": "auto",
-            "border-right": "none"
-          });
+        $("#meta").animateAuto("width", function() {
+          $(this).css("width", "auto");
+        });
+        $({
+          "alpha": 1,
+        }).animate({
+          "alpha": 0,
+        }, {
+          step: function() {
+            $("#meta").css({
+              "border-right-color": "rgba(255,255,255," + this.alpha + ")",
+            });
+          }
         });
       });
     }
