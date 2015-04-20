@@ -198,7 +198,7 @@
         app.ctx.drawImage(app.canvas, 0, 0);
         app.ctx.restore();
 
-        app.ctx.fillStyle = 'rgba(0, 0, 0, 0.01)';
+        app.ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
         app.ctx.fillRect(0, 0, w, h);
 
         app.ctx.drawImage(app.offcanvas, 0, 0);
