@@ -66,20 +66,30 @@ html, body {
 
 
 #meta {
+  width: 500px;
+  max-width: 100%;
   height: 50px;
+
   cursor: pointer;
   font-size: 200%;
   
-  position: fixed;
+  position: absolute;
   left: 0px;
   bottom: 0px;
   padding: 10px;
+
+  border-right: 1px solid #fff;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1;
 }
 
 #meta:active {
   background-color: rgba(50, 50, 50, 0.5);
+}
+
+#meta-inner {
+  display: inline-block;
+  width: auto;
 }
 
 #meta-listeners {
@@ -90,7 +100,6 @@ html, body {
 }
 
 #meta-right {
-  float: right;
   line-height: 80%;
   overflow: hidden;
 }

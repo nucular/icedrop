@@ -42,10 +42,8 @@
     // Load a random preset
     app.loadPreset();
 
-    // Hide the station selector
-    $("#meta").on("click", function(e) {
-      $("#stations").slideToggle();
-    });
+    // Toggle the station selector
+    $("#meta").on("click", app.toggleSelector);
   };
 
   // Set the station mount if the hash was modified
@@ -57,6 +55,29 @@
     else if (app.mount != hmount)
       app.setMount(hmount);
   };
+
+  // Show or hide the station selector
+  app.toggleSelector = function(state) {
+    if (state != false && state != true) {
+      state = !$("#stations").is(":visible");
+    }
+    if (state) {
+      $("#meta")
+        .css("border-right", "1px solid #fff")
+        .animate({"width": 500}, function() {
+          $("#stations").slideDown();
+        });
+    } else {
+      $("#stations").slideUp(function() {
+        $("#meta").animate({"width": $("#meta-inner").width()}, function() {
+          $(this).css({
+            "width": "auto",
+            "border-right": "none"
+          });
+        });
+      });
+    }
+  }
 
   // Load a preset from an object
   app.loadPreset = function(obj) {
@@ -143,7 +164,7 @@
         if (hmount != mount)
           window.location.hash = "#" + mount;
 
-        $("#stations").slideUp();
+        app.toggleSelector(false);
 
         // Try to load a preset if existant
         app.updateData(function(station, data) {
@@ -168,7 +189,7 @@
         if (hmount != "")
           window.location.hash = "";
 
-        $("#stations").slideDown();
+        app.toggleSelector(true);
         app.updateData();
       }
     }
