@@ -15,10 +15,9 @@
 
   app.presets = {
     deflt: new Preset({
-      load: function() {
-        app.offctx.globalCompositeOperation = "lighter";
-      },
       draw: function(w, h) {
+        app.offctx.globalCompositeOperation = "lighter";
+
         // Clear the offscreen canvas
         app.offctx.clearRect(0, 0, w, h);
 
@@ -59,10 +58,8 @@
     }),
 
     ristovski: new Preset({
-      load: function() {
-        app.offctx.globalCompositeOperation = "lighter";
-      },
       draw: function(w, h) {
+        app.offctx.globalCompositeOperation = "lighter";
         app.offctx.clearRect(0, 0, w, h);
 
         var fcount = app.analyser.frequencyBinCount;
@@ -157,6 +154,51 @@
         app.ctx.restore();
 
         app.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        app.ctx.fillRect(0, 0, w, h);
+
+        app.ctx.drawImage(app.offcanvas, 0, 0);
+      }
+    }),
+
+    deadrose: new Preset({
+      draw: function(w, h) {
+        app.offctx.globalCompositeOperation = "lighter";
+        var s = Math.min(w, h) / 2;
+        app.offctx.clearRect(0, 0, w, h);
+
+        var fcount = app.analyser.frequencyBinCount;
+        var tcount = app.analyser.fftSize;
+
+        app.offctx.translate(w / 2, h / 2);
+        var avg = 0;
+        for (var i = 0; i < fcount; i++) {
+          var f = app.freqdata[i] / 255;
+          var t = app.timedata[Math.floor((i / fcount) * tcount)] / 255;
+
+          if (i < fcount / 3)
+            avg += f * f;
+          else
+            avg -= f * f;
+
+          var x = Math.cos(i / fcount * 200) * f;
+          var y = Math.sin(i / fcount * 200) * f;
+
+          app.offctx.fillStyle = "hsla(" + (300+(i/fcount)*80) + ", 100%," + (t * 100) + "%, " + (f+0.6) + ")";
+          app.offctx.fillRect(x * s, y * s,
+            (0.1 + f) * (s / 60), (0.1 + f) * (s / 60));
+
+        }
+        app.offctx.translate(-w / 2, -h / 2);
+
+        app.ctx.save();
+        app.ctx.translate(w/2, h/2);
+        app.ctx.rotate((avg / (fcount / 2)) / 10);
+        app.ctx.scale(0.99, 0.99);
+        app.ctx.translate(-w/2, -h/2);
+        app.ctx.drawImage(app.canvas, 0, 0);
+        app.ctx.restore();
+
+        app.ctx.fillStyle = 'rgba(0, 0, 0, 0.01)';
         app.ctx.fillRect(0, 0, w, h);
 
         app.ctx.drawImage(app.offcanvas, 0, 0);

@@ -193,7 +193,7 @@
             var success = app.loadPresetFromDescription(station.server_description,
               function() {
                 // Error or not even requested, load random preset instead
-                app.loadPreset();
+                app.loadPreset(app.presets["rose"]);
               });
           }
         });
