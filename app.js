@@ -109,10 +109,14 @@
 
   // Load a preset from an object
   app.loadPreset = function(obj) {
+    if (app.preset && app.preset.unload)
+      app.preset.unload();
+
     if (!obj) {
       var n = chooseProperty(app.presets);
       obj = app.presets[n];
     }
+    
     app.preset = obj;
     if (obj.hasOwnProperty("load") && obj.load)
       obj.load();
