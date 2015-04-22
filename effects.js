@@ -183,9 +183,11 @@
           var x = Math.cos(i / fcount * 200) * f;
           var y = Math.sin(i / fcount * 200) * f;
 
-          app.offctx.fillStyle = "hsla(" + (300+(i/fcount)*80) + ", 100%," + (t * 100) + "%, " + (f+0.6) + ")";
-          app.offctx.fillRect(x * s, y * s,
-            (0.1 + f) * (s / 60), (0.1 + f) * (s / 60));
+          if (!(x == 0 && y == 0)) {
+            app.offctx.fillStyle = "hsla(" + (300+(i/fcount)*80) + ", 100%," + (t * 100) + "%, " + (f+0.6) + ")";
+            app.offctx.fillRect(x * s, y * s,
+              (0.1 + f) * (s / 60), (0.1 + f) * (s / 60));
+          }
 
         }
         app.offctx.translate(-w / 2, -h / 2);
