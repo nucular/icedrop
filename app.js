@@ -39,8 +39,8 @@
     app.updateData();
     setInterval(app.updateData, 5000);
 
-    // Load a random preset
-    app.loadPreset();
+    // Load a random effect
+    app.loadEffect();
 
     // Toggle the station selector
     $("#meta").on("click", app.toggleSelector);
@@ -107,23 +107,23 @@
     }
   }
 
-  // Load a preset from an object
-  app.loadPreset = function(obj) {
-    if (app.preset && app.preset.unload)
-      app.preset.unload();
+  // Load a effect from an object
+  app.loadEffect = function(obj) {
+    if (app.effect && app.effect.unload)
+      app.effect.unload();
 
     if (!obj) {
       var n = chooseProperty(app.effects);
       obj = app.effects[n];
     }
     
-    app.preset = obj;
+    app.effect = obj;
     if (obj.hasOwnProperty("load") && obj.load)
       obj.load();
   };
 
-  // Load a preset from a JSON string
-  app.loadPresetFromJSON = function(json) {
+  // Load a effect from a JSON string
+  app.loadEffectFromJSON = function(json) {
     var obj;
     try {
       obj = JSON.parse(json, function (k, v) {
@@ -141,15 +141,15 @@
         return v;
       });
     } catch (e) {
-      console.error("Error while parsing preset JSON", e);
+      console.error("Error while parsing effect JSON", e);
       return false;
     }
-    app.loadPreset(new app.Preset(obj));
+    app.loadEffect(new app.effect(obj));
     return true;
   };
 
-  // Load a preset from a Icecast description string
-  app.loadPresetFromDescription = function(desc, failcb) {
+  // Load a effect from a Icecast description string
+  app.loadEffectFromDescription = function(desc, failcb) {
     var m = desc.match(/icedrop:(.+|\n+)/m);
     if (!m) {
       failcb();
@@ -158,23 +158,23 @@
     m = m[1];
 
     if (m.match(/^\w+$/)) {
-      // Load preset by name
-      console.log("Station requested loading preset by name:", m);
+      // Load effect by name
+      console.log("Station requested loading effect by name:", m);
       if (app.effects.hasOwnProperty(m))
-        app.loadPreset(app.effects[m]);
+        app.loadEffect(app.effects[m]);
       else
         failcb();
     } else if (m.match(/^(?:https?:\/\/)?(?:[\w]+\.)(?:\.?[\w]{2,})+$/)) {
-      // Load preset from URL
-      console.log("Station requested loading preset from URL:", m);
+      // Load effect from URL
+      console.log("Station requested loading effect from URL:", m);
       $.get(m, function(data) {
-        if (!app.loadPresetFromJSON(data))
+        if (!app.loadEffectFromJSON(data))
           failcb();
       }, failcb);
     } else {
-      // Load preset from direct JSON
-      console.log("Station requested loading preset from JSON:", m);
-      if (!app.loadPresetFromJSON(m))
+      // Load effect from direct JSON
+      console.log("Station requested loading effect from JSON:", m);
+      if (!app.loadEffectFromJSON(m))
         failcb();
     }
   };
@@ -198,13 +198,13 @@
 
         app.toggleSelector(false);
 
-        // Try to load a preset if existant
+        // Try to load a effect if existant
         app.updateData(function(station, data) {
           if (station && station.hasOwnProperty("server_description")) {
-            var success = app.loadPresetFromDescription(station.server_description,
+            var success = app.loadEffectFromDescription(station.server_description,
               function() {
-                // Error or not even requested, load random preset instead
-                app.loadPreset(app.effects["rose"]);
+                // Error or not even requested, load random effect instead
+                app.loadEffect(app.effects["rose"]);
               });
           }
         });
@@ -305,8 +305,8 @@
     app.offcanvas.width = w;
     app.offcanvas.height = h;
 
-    if (app.preset.resize)
-      app.preset.resize(w, h);
+    if (app.effect.resize)
+      app.effect.resize(w, h);
   };
 
   // Get the current frequency- and time-domain data
@@ -314,15 +314,15 @@
     app.analyser.getByteFrequencyData(app.freqdata);
     app.analyser.getByteTimeDomainData(app.timedata);
 
-    if (app.preset.update)
-      app.preset.update(dt);
+    if (app.effect.update)
+      app.effect.update(dt);
   };
 
   // Draw the visualization
   app.draw = function() {
     var w = app.canvas.width, h = app.canvas.height;
-    if (app.preset.draw)
-      app.preset.draw(w, h);
+    if (app.effect.draw)
+      app.effect.draw(w, h);
   };
 
 })();

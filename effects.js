@@ -5,16 +5,16 @@
   window.app = app;
 
   // Keep the contexts separate
-  function Preset(base) {
+  function Effect(base) {
     this.load = base.load;
     this.draw = base.draw;
     this.resize = base.resize;
   }
 
-  app.Preset = Preset;
+  app.Effect = Effect;
 
   app.effects = {
-    deflt: new Preset({
+    deflt: new Effect({
       draw: function(w, h) {
         app.offctx.globalCompositeOperation = "lighter";
 
@@ -57,7 +57,7 @@
       }
     }),
 
-    ristovski: new Preset({
+    ristovski: new Effect({
       draw: function(w, h) {
         app.offctx.globalCompositeOperation = "lighter";
         app.offctx.clearRect(0, 0, w, h);
@@ -92,7 +92,7 @@
       }
     }),
 
-    simple: new Preset({
+    simple: new Effect({
       draw: function(w, h) {
         app.ctx.clearRect(0, 0, w, h);
 
@@ -111,7 +111,7 @@
       }
     }),
 
-    freq3d: new Preset({
+    freq3d: new Effect({
       draw: function(w, h) {
         app.offctx.clearRect(0, 0, w, h);
         app.offctx.translate(w / 2, h / 2);
@@ -160,7 +160,7 @@
       }
     }),
 
-    deadrose: new Preset({
+    deadrose: new Effect({
       draw: function(w, h) {
         app.offctx.globalCompositeOperation = "lighter";
         var s = Math.min(w, h) / 2;
