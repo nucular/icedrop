@@ -72,6 +72,7 @@ html, body {
 
   cursor: pointer;
   font-size: 200%;
+  overflow: hidden;
   
   position: absolute;
   left: 0px;
@@ -90,6 +91,7 @@ html, body {
 #meta-inner {
   display: inline-block;
   width: auto;
+  white-space: nowrap;
 }
 
 #meta-listeners {
