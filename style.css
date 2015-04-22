@@ -25,6 +25,7 @@ html, body {
   width: 100%;
   max-width: 500px;
   height: calc(100% - 90px);
+  overflow: auto;
 
   position: fixed;
   left: 0px;
