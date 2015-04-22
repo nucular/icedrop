@@ -13,7 +13,7 @@
 
   app.Preset = Preset;
 
-  app.presets = {
+  app.effects = {
     deflt: new Preset({
       draw: function(w, h) {
         app.offctx.globalCompositeOperation = "lighter";

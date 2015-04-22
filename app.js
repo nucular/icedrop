@@ -113,8 +113,8 @@
       app.preset.unload();
 
     if (!obj) {
-      var n = chooseProperty(app.presets);
-      obj = app.presets[n];
+      var n = chooseProperty(app.effects);
+      obj = app.effects[n];
     }
     
     app.preset = obj;
@@ -160,8 +160,8 @@
     if (m.match(/^\w+$/)) {
       // Load preset by name
       console.log("Station requested loading preset by name:", m);
-      if (app.presets.hasOwnProperty(m))
-        app.loadPreset(app.presets[m]);
+      if (app.effects.hasOwnProperty(m))
+        app.loadPreset(app.effects[m]);
       else
         failcb();
     } else if (m.match(/^(?:https?:\/\/)?(?:[\w]+\.)(?:\.?[\w]{2,})+$/)) {
@@ -204,7 +204,7 @@
             var success = app.loadPresetFromDescription(station.server_description,
               function() {
                 // Error or not even requested, load random preset instead
-                app.loadPreset(app.presets["rose"]);
+                app.loadPreset(app.effects["rose"]);
               });
           }
         });
