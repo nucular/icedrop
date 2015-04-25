@@ -6,6 +6,7 @@
   var api = window.api || {};
 
   app.SERVER = "http://vps.starcatcher.us:9001";
+  app.THUMBRENDERER = false;
 
   // Set up WebAudio, bind events and intervals
   app.load = function() {
@@ -42,6 +43,19 @@
     $("#screen").on("click", function() {
       app.toggleMenu(false);
     });
+
+    if (app.THUMBRENDERER) {
+      var w = 115, h = 65;
+
+      clearTimeout(base.resizeid);
+      base.canvas.width = w;
+      base.canvas.height = h;
+
+      $("#screen").css({width: w, height: h});
+
+      if (app.resize)
+        app.resize(w, h);
+    }
   };
 
   // Set the station mount if the hash was modified

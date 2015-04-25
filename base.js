@@ -12,6 +12,8 @@
   base.mouse = {x: 0, y: 0};
   base.fixedtimestep = false;
 
+  base.resizeid = null;;
+
   // Set up the canvas, bind events
   base.init = function() {
     base.canvas = $("#screen")[0];
@@ -22,11 +24,10 @@
     base.canvas.height = h;
 
     // Throttle resize events
-    var rid;
     $(window).bind("resize", function(e) {
-      clearTimeout(rid);
+      clearTimeout(base.resizeid);
 
-      rid = setTimeout(function() {
+      base.resizeid = setTimeout(function() {
         var ow = base.canvas.width, oh = base.canvas.height;
         var w = $(document.body).width(), h = $(document.body).height();
 
@@ -37,17 +38,6 @@
           app.resize(w, h, ow, oh);
       }, 200);
     });
-
-    base.thumbnailmode = function() {
-      clearTimeout(rid);
-      base.canvas.width = 115;
-      base.canvas.height = 65;
-
-      $("#screen").css({width: 115, height: 65});
-
-      if (app.resize)
-        app.resize(115, 65);
-    }
 
     // base.mousemoved
     $("#screen").bind("mousemove", function(e) {
