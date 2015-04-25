@@ -6,6 +6,9 @@
 
   // Keep the contexts separate
   function Effect(base) {
+    this.name = base.name;
+    this.author = base.author;
+
     this.load = base.load;
     this.draw = base.draw;
     this.resize = base.resize;
@@ -18,6 +21,8 @@
 
   app.effects = {
     deflt: new Effect({
+      name: "Default",
+      author: "nucular",
       draw: function(w, h, s) {
         api.octx.globalCompositeOperation = "lighter";
 
@@ -61,6 +66,8 @@
     }),
 
     ristovski: new Effect({
+      name: "Effect Jesus",
+      author: "Ristovski (effect jesus)",
       draw: function(w, h, s) {
         api.octx.globalCompositeOperation = "lighter";
         api.octx.clearRect(0, 0, w, h);
@@ -96,6 +103,8 @@
     }),
 
     simple: new Effect({
+      name: "Simple",
+      author: "nucular",
       draw: function(w, h, s) {
         api.ctx.clearRect(0, 0, w, h);
 
@@ -115,6 +124,8 @@
     }),
 
     freq3d: new Effect({
+      name: "Freq3D",
+      author: "nucular",
       draw: function(w, h, s) {
         api.octx.clearRect(0, 0, w, h);
         api.octx.translate(w / 2, h / 2);
@@ -164,6 +175,8 @@
     }),
 
     deadrose: new Effect({
+      name: "Dead Rose",
+      author: "nucular",
       draw: function(w, h, s) {
         api.octx.globalCompositeOperation = "lighter";
         api.octx.clearRect(0, 0, w, h);
@@ -212,6 +225,8 @@
     }),
 
     gltest: new Effect({
+      name: "GLTest",
+      author: "nucular",
       renderer: "webgl",
       shaders: {
         fragment: "precision mediump float;"

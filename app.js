@@ -36,8 +36,9 @@
     api.load();
     app.loadEffect();
 
-    // Toggle the station selector
+    // Toggle the menu things
     $("#meta").on("click", app.toggleMenu);
+    $("#effects-toggle").on("click", app.toggleEffects);
     $("#screen").on("click", function() {
       app.toggleMenu(false);
     });
@@ -56,10 +57,10 @@
   // Show or hide the menu with the effect and station selectors
   app.toggleMenu = function(state) {
     if (state != false && state != true) {
-      state = !$("#stations").is(":visible");
+      state = !$("#menu").is(":visible");
     }
     if (state) {
-      $("#stations").focus();
+      $("#menu").focus();
       $({
         "alpha": 0,
         "width": $("#meta-inner").width() + 10
@@ -83,7 +84,7 @@
       });
 
     } else {
-      $("#stations").blur();
+      $("#menu").blur();
       $("#menu").slideUp(function() {
         $("#meta").animateAuto("width", function() {
           $(this).css("width", "auto");
@@ -103,6 +104,49 @@
           }
         });
       });
+    }
+  }
+
+  // Show or hide the effect selector which replaces the stations
+  app.toggleEffects = function(state) {
+    if (state != false && state != true) {
+      state = !$("#effects").is(":visible");
+    }
+    if (state) {
+      for (var k in app.effects) {
+        if (app.effects.hasOwnProperty(k)) {
+          var v = app.effects[k];
+
+          var el = $(".effect.template")
+            .clone()
+            .removeClass("template")
+            .attr("id", k)
+            .appendTo("#effects")
+            .on("click", function(e) {
+              e.preventDefault();
+
+              $(".effect.current").removeClass("current");
+              $(this).addClass("current");
+              app.loadEffect(app.effects[$(this).attr("id")]);
+            });
+
+          if (v.name == app.effect.name)
+            el.addClass("current");
+          el.find(".effect-name").text(v.name);
+          el.find(".effect-author").text(v.author);
+        }
+      }
+
+      $("#stations").slideUp(function() {
+        $("#effects").slideDown();
+      });
+      $("#effects-toggle").addClass("current");
+    } else {
+      $("#effects").slideUp(function() {
+        $(".effect:not(.template)").remove();
+        $("#stations").slideDown();
+      });
+      $("#effects-toggle").removeClass("current");
     }
   }
 
@@ -310,12 +354,13 @@
         var el = $(".station#" + id);
         if (el.length == 0) {
           // Clone the template element
-          el = $(".station#template")
+          el = $(".station.template")
             .clone()
+            .removeClass("template")
             .attr("id", id)
             .appendTo("#stations").hide().fadeIn()
             .on("click", function(e) {
-              $(".station").removeClass("current");
+              $(".station.current").removeClass("current");
               $(this).addClass("current");
             });
         }
@@ -339,7 +384,7 @@
         var el = $(v);
         var id = el.attr("id");
 
-        if (ids.indexOf(id) == -1 && id != "template") {
+        if (id && ids.indexOf(id) == -1) {
           el.fadeOut(function() {
             el.remove();
           });

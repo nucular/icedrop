@@ -10,14 +10,20 @@
 <body>
   <div id="menu">
     <div id="header">
-      <h1>icedrop <small id="server-host"></small></h1>
+      <h1>icedrop <small id="server-host"></small>
+        <div class="button right" id="effects-toggle">Effects</div>
+      </h1>
     </div>
 
     <div id="effects">
+      <a href="#" class="effect button template">
+        <span class="effect-name"></span>
+        <div class="effect-author"></div>
+      </a>
     </div>
 
     <div id="stations">
-      <a href="#" class="station button" id="template">
+      <a href="#" class="station button template">
         <span class="station-listeners">0</span>
         <span class="station-name"></span>
         <div>
@@ -30,10 +36,10 @@
   </div>
   <div id="meta" class="button">
     <div id="meta-inner">
-      <div id="meta-listeners">0</div>
+      <div id="meta-listeners"></div>
       <div id="meta-right">
-        <span id="meta-title">Unknown</span><br/>
-        <span id="meta-artist">Unknown</span>
+        <span id="meta-title"></span><br/>
+        <span id="meta-artist"></span>
       </div>
     </div>
   </div>

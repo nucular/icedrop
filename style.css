@@ -9,8 +9,19 @@ html, body {
   height: 100%;
 }
 
+.left {
+  float: left;
+}
+.right {
+  float: right;
+}
+
 h1 > small {
   font-size: 50%;
+}
+
+.template {
+  display: none !important;
 }
 
 #screen {
@@ -26,13 +37,17 @@ h1 > small {
 
 
 .button {
+  display: inline-block;
+  padding: 10px;
+  cursor: pointer;
   background: rgba(0, 0, 0, 0.7);
+  font-size: 15px;
 }
 .button:hover {
   background: rgba(50, 50, 50, 0.7) !important;
 }
 .button:active, .button.current {
-  background: rgba(100, 100, 100, 0.7) !important;
+  background: rgba(80, 80, 80, 0.7) !important;
 }
 
 
@@ -62,12 +77,6 @@ h1 > small {
   display: none;
 }
 
-.effect {
-  display: block;
-  text-decoration: none;
-  color: #fff;
-}
-
 .effect-thumbnail {
   width: 115px;
   height: 65px;
@@ -79,7 +88,7 @@ h1 > small {
   padding-right: 0px;
 }
 
-.station {
+.station, .effect {
   display: block;
   text-decoration: none;
   color: #fff;
@@ -89,7 +98,7 @@ h1 > small {
   padding-bottom: 10px;
 }
 
-.station.button {
+.station.button, .effect.button {
   background: none;
 }
 
@@ -99,21 +108,17 @@ h1 > small {
   padding-right: 20px;
 }
 
-.station-name {
+.station-name, .effect-name {
   font-size: 150%;
-}
-
-.station#template {
-  display: none;
 }
 
 
 #meta {
+  display: block;
   width: 600px;
   max-width: 100%;
   height: 50px;
 
-  cursor: pointer;
   font-size: 200%;
   overflow: hidden;
   
