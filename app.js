@@ -260,6 +260,7 @@
         if (hmount != mount)
           window.location.hash = "#" + mount;
 
+        $("#station.current").removeClass("current");
         app.toggleMenu(false);
 
         // Try to load a effect if existant
@@ -296,6 +297,8 @@
   app.updateData = function(cb) {
     $.getJSON(app.SERVER + "/status-json.xsl", function(data) {
       var current, ids = [];
+
+      $("#server-host").text(data.icestats.host);
 
       $.each(data.icestats.source, function(i, v) {
         var mount = v.listenurl.match(/\/([^\/]+)$/)[1];

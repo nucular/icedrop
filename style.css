@@ -1,12 +1,16 @@
 html, body {
   font-family: "Roboto", sans-serif;
   color: #fff;
-  background-color: #000;
+  background: #000;
 
   margin: 0;
 
   overflow: hidden;
   height: 100%;
+}
+
+h1 > small {
+  font-size: 50%;
 }
 
 #screen {
@@ -21,21 +25,54 @@ html, body {
 }
 
 
+.button {
+  background: rgba(0, 0, 0, 0.7);
+}
+.button:hover {
+  background: rgba(50, 50, 50, 0.7) !important;
+}
+.button:active, .button.current {
+  background: rgba(100, 100, 100, 0.7) !important;
+}
+
+
 #menu {
   width: 100%;
   max-width: 620px;
-  height: calc(100% - 90px);
+  height: calc(100% - 70px);
   overflow: auto;
 
   position: fixed;
   left: 0px;
   bottom: 70px;
-  padding-top: 10px; padding-bottom: 10px;
-  background-color: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.7);
   z-index: 1;
 
   border-right: 1px solid white;
 }
+
+#header {
+  margin-left: 20px; margin-right: 20px;
+}
+
+
+#effects {
+  padding-left: 0px;
+  padding-right: 0px;
+  display: none;
+}
+
+.effect {
+  display: block;
+  text-decoration: none;
+  color: #fff;
+}
+
+.effect-thumbnail {
+  width: 115px;
+  height: 65px;
+}
+
 
 #stations {
   padding-left: 0px;
@@ -52,6 +89,10 @@ html, body {
   padding-bottom: 10px;
 }
 
+.station.button {
+  background: none;
+}
+
 .station-listeners {
   font-size: 150%;
   float: left;
@@ -60,13 +101,6 @@ html, body {
 
 .station-name {
   font-size: 150%;
-}
-
-.station:hover, .station.current {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-.station:active {
-  background-color: rgba(255, 255, 255, 0.3);
 }
 
 .station#template {
@@ -89,12 +123,7 @@ html, body {
   padding: 10px;
 
   border-right: 1px solid rgba(255,255,255,1);
-  background-color: rgba(0, 0, 0, 0.7);
   z-index: 1;
-}
-
-#meta:active {
-  background-color: rgba(50, 50, 50, 0.5);
 }
 
 #meta-inner {
