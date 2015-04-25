@@ -1,19 +1,18 @@
 (function() {
   "use strict";
+
+  var base = window.base || {};
   var app = window.app || {};
-  window.app = app;
+  var api = window.api || {};
 
   app.SERVER = "http://vps.starcatcher.us:9001";
 
   // Set up WebAudio, bind events and intervals
   app.load = function() {
-    app.mount = "";
+    api.load();
 
-    // Off-screen canvas
-    app.offcanvas = document.createElement("canvas");
-    app.offcanvas.width = app.canvas.width;
-    app.offcanvas.height = app.canvas.height;
-    app.offctx = app.offcanvas.getContext("2d");
+    app.mount = "";
+    app.effect = {};
 
     // Initialize WebAudio
     app.context = new AudioContext();
@@ -44,6 +43,9 @@
 
     // Toggle the station selector
     $("#meta").on("click", app.toggleSelector);
+    $("#screen").on("click", function() {
+      app.toggleSelector(false);
+    });
   };
 
   // Set the station mount if the hash was modified
@@ -62,29 +64,31 @@
       state = !$("#stations").is(":visible");
     }
     if (state) {
+      $("#stations").focus();
       $({
         "alpha": 0,
         "width": $("#meta-inner").width() + 10
       }).animate({
         "alpha": 1,
-        "width": 500
+        "width": 600
       }, {
         step: function() {
           $("#meta").css({
-            "border-right-color": "rgba(255,255,255," + this.alpha + ")",
+            "border-color": "rgba(255,255,255," + this.alpha + ")",
             "width": this.width
           });
         },
         complete: function() {
           $("#meta").css({
-            "border-right-color": "rgba(255,255,255,1)",
-            "width": 500
+            "border-color": "rgba(255,255,255,1)",
+            "width": 600
           });
           $("#stations").slideDown();
         }
       });
 
     } else {
+      $("#stations").blur();
       $("#stations").slideUp(function() {
         $("#meta").animateAuto("width", function() {
           $(this).css("width", "auto");
@@ -96,11 +100,11 @@
         }, {
           step: function() {
             $("#meta").css({
-              "border-right-color": "rgba(255,255,255," + this.alpha + ")",
+              "border-color": "rgba(255,255,255," + this.alpha + ")",
             });
           },
           complete: function() {
-            $("#meta").css("border-right-color", "rgba(255,255,255,0)");
+            $("#meta").css("border-color", "rgba(255,255,255,0)");
           }
         });
       });
@@ -118,6 +122,71 @@
     }
     
     app.effect = obj;
+    base.time = 0;
+
+    if (obj.hasOwnProperty("renderer") && obj.renderer)
+      api.setRenderer(obj.renderer);
+    else
+      api.setRenderer("2d")
+
+    // Set up a "GLSL Sandbox"-like pipeline if requested
+    if (obj.hasOwnProperty("shaders") && (api.renderer == "webgl" || api.renderer == "experimental-webgl")) {
+      var buffer = api.gl.createBuffer();
+      api.gl.bindBuffer(api.gl.ARRAY_BUFFER, buffer);
+      api.gl.bufferData(api.gl.ARRAY_BUFFER, new Float32Array( [ - 1.0, - 1.0, 1.0, - 1.0, - 1.0, 1.0, 1.0, - 1.0, 1.0, 1.0, - 1.0, 1.0 ] ), api.gl.STATIC_DRAW);
+
+      var fragment = api.gl.createShader(api.gl.FRAGMENT_SHADER);
+      api.gl.shaderSource(fragment, obj.shaders.fragment ||
+        "precision mediump float;\n" +
+        "uniform float time;\n" +
+        "uniform vec2 resolution;\n" +
+        "void main(void) {\n" +
+        "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n" +
+        "}");
+      api.gl.compileShader(fragment);
+
+      var vertex = api.gl.createShader(api.gl.VERTEX_SHADER);
+      api.gl.shaderSource(vertex, obj.shaders.vertex ||
+        "attribute vec3 position;\n" +
+        "void main(void) {\n" +
+        "  gl_Position = vec4(position, 1.0);\n" +
+        "}");
+      api.gl.compileShader(vertex);
+
+      api.gl.program = api.gl.createProgram();
+      api.gl.attachShader(api.gl.program, fragment);
+      api.gl.attachShader(api.gl.program, vertex);
+      api.gl.deleteShader(fragment);
+      api.gl.deleteShader(vertex);
+      api.gl.linkProgram(api.gl.program);
+      api.gl.useProgram(api.gl.program);
+
+      api.gl.program.positionLocation = api.gl.getAttribLocation(api.gl.program, "position");
+      api.gl.enableVertexAttribArray(api.gl.program.positionLocation);
+      api.gl.program.timeLocation = api.gl.getUniformLocation(api.gl.program, "time");
+      api.gl.program.mouseLocation = api.gl.getUniformLocation(api.gl.program, "mouse");
+      api.gl.program.resolutionLocation = api.gl.getUniformLocation(api.gl.program, "resolution");
+
+      if (!obj.draw) {
+        obj.draw = function(w, h, s) {
+          api.gl.uniform2f(api.gl.program.resolutionLocation, w, h);
+          api.gl.vertexAttribPointer(api.gl.program.positionLocation, 2, api.gl.FLOAT, false, 0, 0);
+
+          api.gl.clear(api.gl.COLOR_BUFFER_BIT | api.gl.DEPTH_BUFFER_BIT);
+          api.gl.drawArrays(api.gl.TRIANGLES, 0, 6);
+        }
+      }
+
+      if (!obj.update) {
+        obj.update = function(dt, time) {
+          api.gl.uniform1f(api.gl.program.timeLocation, time);
+          api.gl.uniform2f(api.gl.program.mouseLocation,
+            base.mouse.x / base.canvas.width,
+            -base.mouse.y / base.canvas.height);
+        }
+      }
+    }
+
     if (obj.hasOwnProperty("load") && obj.load)
       obj.load();
   };
@@ -284,9 +353,9 @@
         console.log("Current station disconnected");
         $(".station.current").fadeOut(function() {
           $(this).remove();
+          app.updateData();
         });
         app.setMount();
-        app.updateData();
 
       } else if (current) {
         // Update current station informations
@@ -301,28 +370,42 @@
   };
 
   // Viewport has been resized
-  app.resize = function(w, h) {
-    app.offcanvas.width = w;
-    app.offcanvas.height = h;
+  app.resize = function(w, h, ow, oh) {
+    var r = true;
+    if (app.effect.resize) {
+      r = app.effect.resize(w, h, ow, oh);
+    }
+    if (r == true || typeof r == "undefined") {
+      api.canvas.width = w;
+      api.canvas.height = h;
+      api.ocanvas.width = w;
+      api.ocanvas.height = h;
 
-    if (app.effect.resize)
-      app.effect.resize(w, h);
+      if (api.gl && api.ogl) {
+        api.gl.viewport(0, 0, w, h);
+        api.ogl.viewport(0, 0, w, h);
+      }
+    }
   };
 
   // Get the current frequency- and time-domain data
-  app.update = function(dt) {
+  app.update = function(dt, time) {
     app.analyser.getByteFrequencyData(app.freqdata);
     app.analyser.getByteTimeDomainData(app.timedata);
 
     if (app.effect.update)
-      app.effect.update(dt);
+      app.effect.update(dt, time);
   };
 
   // Draw the visualization
   app.draw = function() {
-    var w = app.canvas.width, h = app.canvas.height;
+    var w = base.canvas.width, h = base.canvas.height;
+    var s = Math.min(w, h);
     if (app.effect.draw)
-      app.effect.draw(w, h);
+      app.effect.draw(w, h, s);
+
+    base.ctx.drawImage(api.canvas, 0, 0, w, h);
   };
 
+  window.app = app;
 })();

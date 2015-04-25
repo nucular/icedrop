@@ -1,23 +1,25 @@
 (function() {
   "use strict";
 
+  var base = window.base || {};
   var app = window.app || {};
-  window.app = app;
 
-  app.fps = 60;
+  base.fps = 60;
+  base.time = 0;
 
-  app.lastframe = 0;
-  app.frameinterval = 1000 / app.fps;
-  app.mouse = {x: 0, y: 0};
+  base.lastframe = 0;
+  base.frameinterval = 1000 / base.fps;
+  base.mouse = {x: 0, y: 0};
+  base.fixedtimestep = false;
 
   // Set up the canvas, bind events
-  app.init = function() {
-    app.canvas = $("#screen")[0];
-    app.ctx = app.canvas.getContext("2d");
+  base.init = function() {
+    base.canvas = $("#screen")[0];
+    base.ctx = base.canvas.getContext("2d");
 
     var w = $(document.body).width(), h = $(document.body).height();
-    app.canvas.width = w;
-    app.canvas.height = h;
+    base.canvas.width = w;
+    base.canvas.height = h;
 
     // Throttle resize events
     var rid;
@@ -25,25 +27,26 @@
       clearTimeout(rid);
 
       rid = setTimeout(function() {
+        var ow = base.canvas.width, oh = base.canvas.height;
         var w = $(document.body).width(), h = $(document.body).height();
 
-        app.canvas.width = w;
-        app.canvas.height = h;
+        base.canvas.width = w;
+        base.canvas.height = h;
 
         if (app.resize)
-          app.resize(w, h);
+          app.resize(w, h, ow, oh);
       }, 200);
     });
 
-    // app.mousemoved
+    // base.mousemoved
     $("#screen").bind("mousemove", function(e) {
-      var dx = e.clientX - app.mouse.x, dy = e.clientY - app.mouse.y;
-      app.mouse.x = e.clientX;
-      app.mouse.y = e.clientY;
+      var dx = e.clientX - base.mouse.x, dy = e.clientY - base.mouse.y;
+      base.mouse.x = e.clientX;
+      base.mouse.y = e.clientY;
       if (app.mousemoved)
         app.mousemoved(e.clientX, e.clientY, dx, dy);
 
-    // app.mousepressed
+    // base.mousepressed
     }).bind("mousedown", function(e) {
       var b;
       switch (e.button) {
@@ -55,9 +58,9 @@
           b = "r"; break;
       }
       if (app.mousepressed)
-        app.mousepressed(b, app.mouse.x, app.mouse.y)
+        app.mousepressed(b, base.mouse.x, base.mouse.y)
 
-    // app.mousereleased
+    // base.mousereleased
     }).bind("mouseup", function(e) {
       var b;
       switch (e.button) {
@@ -69,45 +72,48 @@
           b = "r"; break;
       }
       if (app.mousereleased)
-        app.mousereleased(b, app.mouse.x, app.mouse.y)
+        app.mousereleased(b, base.mouse.x, base.mouse.y)
 
-    // app.mousepressed mousewheel events
+    // base.mousepressed mousewheel events
     }).bind("mousewheel", function(e) {
       if (e.originalEvent.wheelDelta > 0) {
-        if (app.mousepressed) app.mousepressed("wu", app.mouse.x, app.mouse.y);
-        if (app.mousereleased) app.mousereleased("wu", app.mouse.x, app.mouse.y);
+        if (app.mousepressed) app.mousepressed("wu", base.mouse.x, base.mouse.y);
+        if (app.mousereleased) app.mousereleased("wu", base.mouse.x, base.mouse.y);
       } else {
-        if (app.mousepressed) app.mousepressed("wd", app.mouse.x, app.mouse.y);
-        if (app.mousereleased) app.mousereleased("wd", app.mouse.x, app.mouse.y);
+        if (app.mousepressed) app.mousepressed("wd", base.mouse.x, base.mouse.y);
+        if (app.mousereleased) app.mousereleased("wd", base.mouse.x, base.mouse.y);
       }
     });
 
     app.load();
-    requestAnimationFrame(app.frame);
+    requestAnimationFrame(base.frame);
   };
 
   // Calculate elapsed time, update and draw everything
-  app.frame = function() {
-    requestAnimationFrame(app.frame);
+  base.frame = function() {
+    requestAnimationFrame(base.frame);
 
     var now = performance ? performance.now() : Date.now();
-    var elapsed = now - app.lastframe;
+    var elapsed = now - base.lastframe;
+    var dt = (base.fixedtimestep ? base.frameinterval : elapsed) / 1000;
+    base.time += dt;
 
     // Limit frame rate
-    if (elapsed > app.frameinterval) {
-      app.lastframe = now - (elapsed % app.frameinterval);
-      app.update((app.fixedtimestep ? app.frameinterval : elapsed) / 1000);
+    if (elapsed > base.frameinterval) {
+      base.lastframe = now - (elapsed % base.frameinterval);
+      app.update(dt, base.time);
+      base.ctx.clearRect(0, 0, base.canvas.width, base.canvas.height);
       app.draw();
     }
   };
 
   // Set the FPS limit
-  app.setFPS = function(fps) {
-    app.fps = fps;
-    app.lastframe = 0;
-    app.frameinterval = 1000 / app.fps;
+  base.setFPS = function(fps) {
+    base.fps = fps;
+    base.lastframe = 0;
+    base.frameinterval = 1000 / base.fps;
   };
 
-  $(app.init);
-
+  window.base = base;
+  $(base.init);
 })();

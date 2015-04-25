@@ -9,17 +9,20 @@
     this.load = base.load;
     this.draw = base.draw;
     this.resize = base.resize;
+
+    this.renderer = base.renderer;
+    this.shaders = base.shaders;
   }
 
   app.Effect = Effect;
 
   app.effects = {
     deflt: new Effect({
-      draw: function(w, h) {
-        app.offctx.globalCompositeOperation = "lighter";
+      draw: function(w, h, s) {
+        api.octx.globalCompositeOperation = "lighter";
 
         // Clear the offscreen canvas
-        app.offctx.clearRect(0, 0, w, h);
+        api.octx.clearRect(0, 0, w, h);
 
         var fcount = app.analyser.frequencyBinCount;
         var tcount = app.analyser.fftSize;
@@ -37,30 +40,30 @@
             avg -= f * f;
 
           // Draw the rectangle
-          app.offctx.fillStyle = "hsl(" + (48+(f * 164)) + ", 100%, " + (t * 100) + "%)";
-          app.offctx.fillRect((i / fcount) * w, h - (f * (h / 4)), w / fcount, f * (h / 4));
-          app.offctx.fillRect(w - (i / fcount) * w, f * (h / 4), w / fcount, -f * (h / 4));
+          api.octx.fillStyle = "hsl(" + (48+(f * 164)) + ", 100%, " + (t * 100) + "%)";
+          api.octx.fillRect((i / fcount) * w, h - (f * (h / 4)), w / fcount, f * (h / 4));
+          api.octx.fillRect(w - (i / fcount) * w, f * (h / 4), w / fcount, -f * (h / 4));
         }
 
         // Translate the contents of the screen, leave behind a trail
-        app.ctx.save();
-        app.ctx.translate(w/2, h/2);
-        app.ctx.rotate((avg / (fcount / 2)) / 10);
-        app.ctx.scale(0.99, 0.99);
-        app.ctx.translate(-w/2, -h/2);
+        api.ctx.save();
+        api.ctx.translate(w/2, h/2);
+        api.ctx.rotate((avg / (fcount / 2)) / 10);
+        api.ctx.scale(0.99, 0.99);
+        api.ctx.translate(-w/2, -h/2);
 
-        app.ctx.drawImage(app.canvas, 0, 0);
-        app.ctx.restore();
+        api.ctx.drawImage(api.canvas, 0, 0);
+        api.ctx.restore();
 
         // Draw the off-screen canvas untranslated to the screen
-        app.ctx.drawImage(app.offcanvas, 0, 0);
+        api.ctx.drawImage(api.ocanvas, 0, 0);
       }
     }),
 
     ristovski: new Effect({
-      draw: function(w, h) {
-        app.offctx.globalCompositeOperation = "lighter";
-        app.offctx.clearRect(0, 0, w, h);
+      draw: function(w, h, s) {
+        api.octx.globalCompositeOperation = "lighter";
+        api.octx.clearRect(0, 0, w, h);
 
         var fcount = app.analyser.frequencyBinCount;
         var tcount = app.analyser.fftSize;
@@ -69,52 +72,52 @@
           var f = app.freqdata[i] / 255;
           var t = app.timedata[Math.floor((i / fcount) * tcount)] / 255;
 
-          app.offctx.fillStyle = "hsl(" + (360-Math.exp(f * 9)) + ", 100%," + (t * 100) + "%)";
-          app.offctx.fillRect((i / fcount) * w, h - (f * (h)), w / fcount, f * (h / 40));
+          api.octx.fillStyle = "hsl(" + (360-Math.exp(f * 9)) + ", 100%," + (t * 100) + "%)";
+          api.octx.fillRect((i / fcount) * w, h - (f * (h)), w / fcount, f * (h / 40));
 
 
-          app.offctx.fillRect(w - (i / fcount) * w, f * (h), w / fcount, -f * (h / 40));
-          app.offctx.fillRect(w - (i / fcount) / w, f * (h), w / fcount, -f * (h / 40));
+          api.octx.fillRect(w - (i / fcount) * w, f * (h), w / fcount, -f * (h / 40));
+          api.octx.fillRect(w - (i / fcount) / w, f * (h), w / fcount, -f * (h / 40));
 
         }
 
-        app.ctx.save();
-        app.ctx.translate(w/2, h/2);
-        app.ctx.scale(0.98, 0.98);
-        app.ctx.translate(-w/2, -h/2);
-        app.ctx.drawImage(app.canvas, 0, 0);
-        app.ctx.restore();
+        api.ctx.save();
+        api.ctx.translate(w/2, h/2);
+        api.ctx.scale(0.98, 0.98);
+        api.ctx.translate(-w/2, -h/2);
+        api.ctx.drawImage(api.canvas, 0, 0);
+        api.ctx.restore();
 
-        app.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        app.ctx.fillRect(0, 0, w, h);
+        api.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        api.ctx.fillRect(0, 0, w, h);
 
-        app.ctx.drawImage(app.offcanvas, 0, 0);
+        api.ctx.drawImage(api.ocanvas, 0, 0);
       }
     }),
 
     simple: new Effect({
-      draw: function(w, h) {
-        app.ctx.clearRect(0, 0, w, h);
+      draw: function(w, h, s) {
+        api.ctx.clearRect(0, 0, w, h);
 
         var fcount = app.analyser.frequencyBinCount;
         var tcount = app.analyser.fftSize;
 
-        app.ctx.strokeStyle = "#fff";
-        app.ctx.beginPath();
-        app.ctx.moveTo(0, h / 2);
+        api.ctx.strokeStyle = "#fff";
+        api.ctx.beginPath();
+        api.ctx.moveTo(0, h / 2);
         for (var i = 0; i < tcount; i++) {
           var f = app.timedata[i] / 255;
 
-          app.ctx.lineTo((i / tcount) * w, f * h);
+          api.ctx.lineTo((i / tcount) * w, f * h);
         }
-        app.ctx.stroke();
+        api.ctx.stroke();
       }
     }),
 
     freq3d: new Effect({
-      draw: function(w, h) {
-        app.offctx.clearRect(0, 0, w, h);
-        app.offctx.translate(w / 2, h / 2);
+      draw: function(w, h, s) {
+        api.octx.clearRect(0, 0, w, h);
+        api.octx.translate(w / 2, h / 2);
 
         var fcount = app.analyser.frequencyBinCount;
         var tcount = app.analyser.fftSize;
@@ -140,36 +143,37 @@
           var px = (x * w) / z;
           var py = (-y * h) / z;
 
-          app.offctx.fillStyle = "hsl(" + (48+(i/fcount * 164)) + ", 100%, " + (t * 100) + "%)";
-          app.offctx.fillRect(px, py, rw, rw / 2);
+          api.octx.fillStyle = "hsl(" + (48+(i/fcount * 164)) + ", 100%, " + (t * 100) + "%)";
+          api.octx.fillRect(px, py, rw, rw / 2);
         }
 
-        app.offctx.translate(-w / 2, -h / 2);
+        api.octx.translate(-w / 2, -h / 2);
 
-        app.ctx.save();
-        app.ctx.translate(w/2, h/2);
-        app.ctx.scale(0.99, 0.99);
-        app.ctx.translate(-w/2, -h/2);
-        app.ctx.drawImage(app.canvas, 0, 0);
-        app.ctx.restore();
+        api.ctx.save();
+        api.ctx.translate(w/2, h/2);
+        api.ctx.scale(0.99, 0.99);
+        api.ctx.translate(-w/2, -h/2);
+        api.ctx.drawImage(api.canvas, 0, 0);
+        api.ctx.restore();
 
-        app.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-        app.ctx.fillRect(0, 0, w, h);
+        api.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        api.ctx.fillRect(0, 0, w, h);
 
-        app.ctx.drawImage(app.offcanvas, 0, 0);
+        api.ctx.drawImage(api.ocanvas, 0, 0);
       }
     }),
 
     deadrose: new Effect({
-      draw: function(w, h) {
-        app.offctx.globalCompositeOperation = "lighter";
-        var s = Math.min(w, h) / 2;
-        app.offctx.clearRect(0, 0, w, h);
+      draw: function(w, h, s) {
+        api.octx.globalCompositeOperation = "lighter";
+        api.octx.clearRect(0, 0, w, h);
+
+        s = s / 2;
 
         var fcount = app.analyser.frequencyBinCount;
         var tcount = app.analyser.fftSize;
 
-        app.offctx.translate(w / 2, h / 2);
+        api.octx.translate(w / 2, h / 2);
         var avg = 0;
         for (var i = 0; i < fcount; i++) {
           var f = app.freqdata[i] / 255;
@@ -184,26 +188,69 @@
           var y = Math.sin(i / fcount * 200) * f;
 
           if (!(x == 0 && y == 0)) {
-            app.offctx.fillStyle = "hsla(" + (300+(i/fcount)*80) + ", 100%," + (t * 100) + "%, " + (f+0.6) + ")";
-            app.offctx.fillRect(x * s, y * s,
+            api.octx.fillStyle = "hsla(" + (300+(i/fcount)*80) + ", 100%," + (t * 100) + "%, " + (f+0.6) + ")";
+            api.octx.fillRect(x * s, y * s,
               (0.1 + f) * (s / 60), (0.1 + f) * (s / 60));
           }
 
         }
-        app.offctx.translate(-w / 2, -h / 2);
+        api.octx.translate(-w / 2, -h / 2);
 
-        app.ctx.save();
-        app.ctx.translate(w/2, h/2);
-        app.ctx.rotate((avg / (fcount / 2)) / 10);
-        app.ctx.scale(0.99, 0.99);
-        app.ctx.translate(-w/2, -h/2);
-        app.ctx.drawImage(app.canvas, 0, 0);
-        app.ctx.restore();
+        api.ctx.save();
+        api.ctx.translate(w/2, h/2);
+        api.ctx.rotate((avg / (fcount / 2)) / 10);
+        api.ctx.scale(0.99, 0.99);
+        api.ctx.translate(-w/2, -h/2);
+        api.ctx.drawImage(api.canvas, 0, 0);
+        api.ctx.restore();
 
-        app.ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
-        app.ctx.fillRect(0, 0, w, h);
+        api.ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
+        api.ctx.fillRect(0, 0, w, h);
 
-        app.ctx.drawImage(app.offcanvas, 0, 0);
+        api.ctx.drawImage(api.ocanvas, 0, 0);
+      }
+    }),
+
+    gltest: new Effect({
+      renderer: "webgl",
+      shaders: {
+        fragment: "precision mediump float;"
+          + "uniform float time;"
+          + "uniform vec2 mouse;"
+          + "uniform vec2 resolution;"
+          + "uniform float avg;"
+          + "void main(void) {"
+          + "  vec2 position = (gl_FragCoord.xy / resolution.xy) + mouse / 4.0;"
+          + "  float color = 0.0;"
+          + "  float btime = (time * 5.0) + (avg * 100.0);"
+          + "  color += sin(position.x * cos(btime / 15.0) * 80.0) + cos(position.y * cos(btime / 15.0) * 10.0);"
+          + "  color += sin(position.y * sin(btime / 10.0) * 40.0) + cos(position.x * sin(btime / 25.0) * 40.0);"
+          + "  color += sin(position.x * sin(btime / 5.0) * 10.0) + sin(position.y * sin(btime / 35.0) * 80.0);"
+          + "  color *= sin(btime / 10.0) * 0.5;"
+          + "  gl_FragColor = vec4(vec3(color, color * 0.5, sin(color + btime / 3.0) * 0.75), 1.0);"
+          + "}"
+      },
+      load: function() {
+        api.gl.program.avgLocation = api.gl.getUniformLocation(api.gl.program, "avg");
+      },
+      draw: function(w, h, ow, oh) {
+        var fcount = app.analyser.frequencyBinCount;
+        var avg = 0;
+        for (var i = 0; i < fcount; i++) {
+          var f = app.freqdata[i] / 255;
+          if (i < fcount / 3)
+            avg += f * f;
+          else
+            avg -= f * f;
+        }
+        avg /= fcount;
+
+        api.gl.uniform1f(api.gl.program.avgLocation, avg);
+        api.gl.uniform2f(api.gl.program.resolutionLocation, w, h);
+        api.gl.vertexAttribPointer(api.gl.program.positionLocation, 2, api.gl.FLOAT, false, 0, 0);
+
+        api.gl.clear(api.gl.COLOR_BUFFER_BIT | api.gl.DEPTH_BUFFER_BIT);
+        api.gl.drawArrays(api.gl.TRIANGLES, 0, 6);
       }
     })
   };
