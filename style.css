@@ -50,6 +50,18 @@ h1 > small {
   background: rgba(80, 80, 80, 0.7) !important;
 }
 
+a:link {
+  text-decoration: none;
+  color: #fff;
+}
+a:visited {
+  color: #fff;
+}
+a:hover {
+  text-decoration: underline;
+  color: #fff;
+}
+
 
 #menu {
   width: 100%;
@@ -99,12 +111,11 @@ h1 > small {
 
 .station, .effect-inner {
   display: block;
-  text-decoration: none;
-  color: #fff;
   padding-left: 20px;
   padding-right: 20px;
   padding-top: 10px;
   padding-bottom: 10px;
+  text-decoration: none !important;
 }
 
 .station.button, .effect.button {

@@ -13,6 +13,17 @@
     app.mount = "";
     app.effect = {};
 
+    // Parse server from search query if possible
+    var sserver = document.location.search.substr(1);
+    if (sserver != "") {
+      app.SERVER = decodeURIComponent(sserver);
+      if (window.history && window.history.pushState)
+        window.history.pushState({}, "",
+          document.location.origin + document.location.pathname);
+      else
+        document.location.search = "";
+    }
+
     // Initialize WebAudio
     app.context = new AudioContext();
 
@@ -66,6 +77,10 @@
       app.setMount();
     else if (app.mount != hmount)
       app.setMount(hmount);
+
+    $("#server-host").attr("href",
+      document.location.origin + document.location.pathname
+      + "?" + encodeURIComponent(app.SERVER) + "#" + hmount);
   };
 
   // Show or hide the menu with the effect and station selectors
@@ -356,7 +371,7 @@
     $.getJSON(app.SERVER + "/status-json.xsl", function(data) {
       var current, ids = [];
 
-      $("#server-host").text(data.icestats.host);
+      $("#server-host").text(data.icestats.host);;
 
       $.each(data.icestats.source, function(i, v) {
         var mount = v.listenurl.match(/\/([^\/]+)$/)[1];
