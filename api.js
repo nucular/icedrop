@@ -6,6 +6,9 @@
   var api = window.api || {};
 
   api.load = function() {
+    api.freqdata = new Uint8Array(app.analyser.frequencyBinCount);
+    api.timedata = new Uint8Array(app.analyser.fftSize);
+
     api.mouse = base.mouse;
     api.setRenderer("2d");
   }

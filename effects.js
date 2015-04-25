@@ -31,8 +31,8 @@
         var avg = 0;
 
         for (var i = 0; i < fcount; i++) {
-          var f = app.freqdata[i] / 255;
-          var t = app.timedata[Math.floor((i / fcount) * tcount)] / 255;
+          var f = api.freqdata[i] / 255;
+          var t = api.timedata[Math.floor((i / fcount) * tcount)] / 255;
 
           if (i < fcount / 2)
             avg += f * f;
@@ -69,8 +69,8 @@
         var tcount = app.analyser.fftSize;
 
         for (var i = 0; i < fcount; i++) {
-          var f = app.freqdata[i] / 255;
-          var t = app.timedata[Math.floor((i / fcount) * tcount)] / 255;
+          var f = api.freqdata[i] / 255;
+          var t = api.timedata[Math.floor((i / fcount) * tcount)] / 255;
 
           api.octx.fillStyle = "hsl(" + (360-Math.exp(f * 9)) + ", 100%," + (t * 100) + "%)";
           api.octx.fillRect((i / fcount) * w, h - (f * (h)), w / fcount, f * (h / 40));
@@ -106,7 +106,7 @@
         api.ctx.beginPath();
         api.ctx.moveTo(0, h / 2);
         for (var i = 0; i < tcount; i++) {
-          var f = app.timedata[i] / 255;
+          var f = api.timedata[i] / 255;
 
           api.ctx.lineTo((i / tcount) * w, f * h);
         }
@@ -126,8 +126,8 @@
         var mfcount = Math.floor(fcount / side) * side;
 
         for (var i = 0; i < mfcount; i++) {
-          var f = app.freqdata[i] / 255;
-          var t = app.timedata[Math.floor((i / fcount) * tcount)] / 255;
+          var f = api.freqdata[i] / 255;
+          var t = api.timedata[Math.floor((i / fcount) * tcount)] / 255;
 
           var x = (i % side) / side;
           var y = f;
@@ -176,8 +176,8 @@
         api.octx.translate(w / 2, h / 2);
         var avg = 0;
         for (var i = 0; i < fcount; i++) {
-          var f = app.freqdata[i] / 255;
-          var t = app.timedata[Math.floor((i / fcount) * tcount)] / 255;
+          var f = api.freqdata[i] / 255;
+          var t = api.timedata[Math.floor((i / fcount) * tcount)] / 255;
 
           if (i < fcount / 3)
             avg += f * f;
@@ -237,7 +237,7 @@
         var fcount = app.analyser.frequencyBinCount;
         var avg = 0;
         for (var i = 0; i < fcount; i++) {
-          var f = app.freqdata[i] / 255;
+          var f = api.freqdata[i] / 255;
           if (i < fcount / 3)
             avg += f * f;
           else

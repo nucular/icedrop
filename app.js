@@ -9,8 +9,6 @@
 
   // Set up WebAudio, bind events and intervals
   app.load = function() {
-    api.load();
-
     app.mount = "";
     app.effect = {};
 
@@ -26,10 +24,6 @@
     app.source = app.context.createMediaElementSource(app.player);
     app.source.connect(app.analyser);
 
-    // Frequency- and time-domain data
-    app.freqdata = new Uint8Array(app.analyser.frequencyBinCount);
-    app.timedata = new Uint8Array(app.analyser.fftSize);
-
     // Update the hash
     app.updateHash();
     setInterval(app.updateHash, 300);
@@ -39,6 +33,7 @@
     setInterval(app.updateData, 5000);
 
     // Load a random effect
+    api.load();
     app.loadEffect();
 
     // Toggle the station selector
@@ -372,7 +367,7 @@
   // Viewport has been resized
   app.resize = function(w, h, ow, oh) {
     var r = true;
-    if (app.effect.resize) {
+    if (app.effect && app.effect.resize) {
       r = app.effect.resize(w, h, ow, oh);
     }
     if (r == true || typeof r == "undefined") {
@@ -390,8 +385,8 @@
 
   // Get the current frequency- and time-domain data
   app.update = function(dt, time) {
-    app.analyser.getByteFrequencyData(app.freqdata);
-    app.analyser.getByteTimeDomainData(app.timedata);
+    app.analyser.getByteFrequencyData(api.freqdata);
+    app.analyser.getByteTimeDomainData(api.timedata);
 
     if (app.effect.update)
       app.effect.update(dt, time);
