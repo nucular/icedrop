@@ -97,7 +97,7 @@
         }
       });
 
-    } else {
+    } else if (app.mount != "") {
       $("#menu").blur();
       $("#menu").slideUp(function() {
         $("#meta").animateAuto("width", function() {
