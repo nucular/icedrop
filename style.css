@@ -21,27 +21,35 @@ html, body {
 }
 
 
-#stations {
+#menu {
   width: 100%;
-  max-width: 600px;
+  max-width: 620px;
   height: calc(100% - 90px);
   overflow: auto;
 
   position: fixed;
   left: 0px;
   bottom: 70px;
-  padding: 10px;
+  padding-top: 10px; padding-bottom: 10px;
   background-color: rgba(0, 0, 0, 0.7);
   z-index: 1;
 
   border-right: 1px solid white;
 }
 
+#stations {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
 .station {
   display: block;
   text-decoration: none;
   color: #fff;
-  padding: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 .station-listeners {

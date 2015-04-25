@@ -37,9 +37,9 @@
     app.loadEffect();
 
     // Toggle the station selector
-    $("#meta").on("click", app.toggleSelector);
+    $("#meta").on("click", app.toggleMenu);
     $("#screen").on("click", function() {
-      app.toggleSelector(false);
+      app.toggleMenu(false);
     });
   };
 
@@ -53,8 +53,8 @@
       app.setMount(hmount);
   };
 
-  // Show or hide the station selector
-  app.toggleSelector = function(state) {
+  // Show or hide the menu with the effect and station selectors
+  app.toggleMenu = function(state) {
     if (state != false && state != true) {
       state = !$("#stations").is(":visible");
     }
@@ -78,13 +78,13 @@
             "border-color": "rgba(255,255,255,1)",
             "width": 600
           });
-          $("#stations").slideDown();
+          $("#menu").slideDown();
         }
       });
 
     } else {
       $("#stations").blur();
-      $("#stations").slideUp(function() {
+      $("#menu").slideUp(function() {
         $("#meta").animateAuto("width", function() {
           $(this).css("width", "auto");
         });
@@ -260,7 +260,7 @@
         if (hmount != mount)
           window.location.hash = "#" + mount;
 
-        app.toggleSelector(false);
+        app.toggleMenu(false);
 
         // Try to load a effect if existant
         app.updateData(function(station, data) {
@@ -285,7 +285,7 @@
         if (hmount != "")
           window.location.hash = "";
 
-        app.toggleSelector(true);
+        app.toggleMenu(true);
         app.updateData();
       }
     }
