@@ -38,6 +38,17 @@
       }, 200);
     });
 
+    base.thumbnailmode = function() {
+      clearTimeout(rid);
+      base.canvas.width = 115;
+      base.canvas.height = 65;
+
+      $("#screen").css({width: 115, height: 65});
+
+      if (app.resize)
+        app.resize(115, 65);
+    }
+
     // base.mousemoved
     $("#screen").bind("mousemove", function(e) {
       var dx = e.clientX - base.mouse.x, dy = e.clientY - base.mouse.y;

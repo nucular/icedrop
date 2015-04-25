@@ -77,9 +77,18 @@ h1 > small {
   display: none;
 }
 
+.effect {
+  display: block;
+  padding: 0px;
+  padding-left: 20px;
+}
+
 .effect-thumbnail {
   width: 115px;
   height: 65px;
+  float: left;
+  margin-right: 20px;
+  background: #000;
 }
 
 
@@ -88,7 +97,7 @@ h1 > small {
   padding-right: 0px;
 }
 
-.station, .effect {
+.station, .effect-inner {
   display: block;
   text-decoration: none;
   color: #fff;

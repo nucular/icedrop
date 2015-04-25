@@ -134,17 +134,17 @@
             el.addClass("current");
           el.find(".effect-name").text(v.name);
           el.find(".effect-author").text(v.author);
+          el.find(".effect-thumbnail").attr("src", "thumbnails/" + k + ".png");
         }
       }
 
-      $("#stations").slideUp(function() {
-        $("#effects").slideDown();
-      });
+      $("#stations").slideUp();
+      $("#effects").slideDown();
       $("#effects-toggle").addClass("current");
     } else {
+      $("#stations").slideDown();
       $("#effects").slideUp(function() {
         $(".effect:not(.template)").remove();
-        $("#stations").slideDown();
       });
       $("#effects-toggle").removeClass("current");
     }
