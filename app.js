@@ -5,8 +5,8 @@
   var app = window.app || {};
   var api = window.api || {};
 
-  app.SERVER = "http://vps.starcatcher.us:9001";
-  app.THUMBRENDERER = false;
+  app.server = "http://vps.starcatcher.us:9001";
+  app.thumbmode = false;
 
   // Set up WebAudio, bind events and intervals
   app.load = function() {
@@ -16,7 +16,7 @@
     // Parse server from search query if possible
     var sserver = document.location.search.substr(1);
     if (sserver != "") {
-      app.SERVER = decodeURIComponent(sserver);
+      app.server = decodeURIComponent(sserver);
       if (window.history && window.history.pushState)
         window.history.pushState({}, "",
           document.location.origin + document.location.pathname);
@@ -55,7 +55,11 @@
       app.toggleMenu(false);
     });
 
-    if (app.THUMBRENDERER) {
+    // Server edit box
+    $("#server-edit").on("click", app.toggleServerEdit);
+    $("#server-edit-box").on("change", app.toggleServerEdit);
+
+    if (app.thumbmode) {
       var w = 115, h = 65;
 
       clearTimeout(base.resizeid);
@@ -80,7 +84,7 @@
 
     $("#server-host").attr("href",
       document.location.origin + document.location.pathname
-      + "?" + encodeURIComponent(app.SERVER) + "#" + hmount);
+      + "?" + encodeURIComponent(app.server) + "#" + hmount);
   };
 
   // Show or hide the menu with the effect and station selectors
@@ -176,6 +180,39 @@
         $(".effect:not(.template)").remove();
       });
       $("#effects-toggle").removeClass("current");
+    }
+  }
+
+  app.toggleServerEdit = function(state) {
+    if (state != false && state != true) {
+      state = !$("#server-edit-box").is(":visible");
+    }
+    if (state) {
+      $("#server-host").hide();
+      $("#server-edit-box").val(app.server).show();
+      $("#server-edit").addClass("current");
+    } else {
+      var server = $("#server-edit-box").val();
+
+      // Make sure stuff is correct
+      if (server.indexOf("/") == server.length-1)
+        server = server.substr(0, server.length-1)
+      if (server.indexOf("https") == 0 && document.location.protocol == "http:")
+        server = server.replace("https", "http");
+      if (server.indexOf("http") == -1)
+        server = "http://" + server;
+
+      if (server != app.server) {
+        // Remove junk
+        $(".station").fadeOut();
+
+        app.server = server;
+        app.setMount();
+      }
+
+      $("#server-host").show();
+      $("#server-edit-box").hide();
+      $("#server-edit").removeClass("current");
     }
   }
 
@@ -324,7 +361,7 @@
 
         app.mount = mount;
         // Load the new stream
-        app.player.setAttribute("src", app.SERVER + "/" + mount);
+        app.player.setAttribute("src", app.server + "/" + mount);
         app.player.load();
         app.player.play();
 
@@ -335,6 +372,11 @@
 
         $("#station.current").removeClass("current");
         app.toggleMenu(false);
+
+        // Hide false meta stuff
+        $("#meta-listeners").text("");
+        $("#meta-title").text("");
+        $("#meta-artist").text("");
 
         // Try to load a effect if existant
         app.updateData(function(station, data) {
@@ -359,6 +401,11 @@
         if (hmount != "")
           window.location.hash = "";
 
+        // Hide false meta stuff
+        $("#meta-listeners").text("");
+        $("#meta-title").text("");
+        $("#meta-artist").text("");
+
         app.toggleMenu(true);
         app.updateData();
       }
@@ -368,7 +415,7 @@
   // Request data from the Icecast API and update everything that uses it
   // The current station and the full data will be passed to the callback
   app.updateData = function(cb) {
-    $.getJSON(app.SERVER + "/status-json.xsl", function(data) {
+    $.getJSON(app.server + "/status-json.xsl", function(data) {
       var current, ids = [];
 
       $("#server-host").text(data.icestats.host);;
@@ -431,9 +478,14 @@
 
       } else if (current) {
         // Update current station informations
+        var title = current.title || "Unknown";
+        var artist = current.artist || "Unknown";
+
         $("#meta-listeners").text(current.listeners);
-        $("#meta-title").text(current.title || "Unknown");
-        $("#meta-artist").text(current.artist || "Unknown");
+        $("#meta-title").text(title);
+        $("#meta-artist").text(artist);
+
+        document.title = artist + " - " + title;
       }
 
       if (cb)

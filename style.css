@@ -38,7 +38,10 @@ h1 > small {
 
 .button {
   display: inline-block;
-  padding: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px;
   cursor: pointer;
   background: rgba(0, 0, 0, 0.7);
   font-size: 15px;
@@ -48,6 +51,12 @@ h1 > small {
 }
 .button:active, .button.current {
   background: rgba(80, 80, 80, 0.7) !important;
+}
+.button.small {
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
 
 a:link {
@@ -60,6 +69,10 @@ a:visited {
 a:hover {
   text-decoration: underline;
   color: #fff;
+}
+
+#server-edit-box {
+  display: none;
 }
 
 
