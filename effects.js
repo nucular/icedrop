@@ -11,6 +11,7 @@
 
     this.load = base.load;
     this.draw = base.draw;
+    this.update = base.update;
     this.resize = base.resize;
 
     this.renderer = base.renderer;
@@ -226,7 +227,7 @@
 
     gltest: new Effect({
       name: "GLTest",
-      author: "nucular",
+      author: "ported from glslsandbox.com",
       renderer: "webgl",
       shaders: {
         fragment: "precision mediump float;"
@@ -261,6 +262,75 @@
         avg /= fcount;
 
         api.gl.uniform1f(api.gl.program.avgLocation, avg);
+        api.gl.uniform2f(api.gl.program.resolutionLocation, w, h);
+        api.gl.vertexAttribPointer(api.gl.program.positionLocation, 2, api.gl.FLOAT, false, 0, 0);
+
+        api.gl.clear(api.gl.COLOR_BUFFER_BIT | api.gl.DEPTH_BUFFER_BIT);
+        api.gl.drawArrays(api.gl.TRIANGLES, 0, 6);
+      }
+    }),
+
+    fireflies: new Effect({
+      name: "Fireflies",
+      author: "ported from glslsandbox.com/e#24765.0",
+      renderer: "webgl",
+      shaders: {
+        fragment: "precision mediump float;"
+          + "uniform float time;"
+          + "uniform vec2 resolution;"
+          + "uniform float avg1;"
+          + "uniform float avg2;"
+          + "void main(void) {"
+          + "  float myTime = time / 50.0;"
+          + "  vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);"
+          + "  p *= mat2(cos(myTime*1.0), sin(myTime*1.0), -sin(myTime*1.0), cos(myTime*1.0));"
+          + "  vec3 destColor = vec3(0.0);"
+          + "  for (float i = 2.0; i < 10.0; i++) {"
+          + "    float j = i * i;"
+          + "    float tt = myTime + 2.0;"
+          + "    vec2 q = p + vec2(sin(tt * j)*length(cos(tt)), cos(tt * j)*length(sin(tt)));"
+          + "    destColor += 0.02 * abs(atan(myTime)) / length(q) * avg1;"
+          + "  }"
+          + "  float g = destColor.r * abs(sin(myTime*5.0));"
+          + "  float b = destColor.r * abs(sin(myTime*3.0));"
+          + "  float r = destColor.r * abs(cos(myTime*0.2));"
+          + "  destColor = vec3(0.0);"
+          + "  for (float i = 2.0; i < 10.0; i++) {"
+          + "    float j = i * i;"
+          + "    float tt = myTime + 1.0;"
+          + "    vec2 q = p + vec2(sin(tt * j)*length(cos(tt)), cos(tt * j)*length(sin(tt)));"
+          + "    destColor += 0.02 * abs(atan(tt)) / length(q) * avg2;"
+          + "  }"
+          + "  g += destColor.r * abs(sin(myTime*2.0));"
+          + "  b += destColor.r * abs(sin(myTime*5.0));"
+          + "  r += destColor.r * abs(cos(myTime*0.5));"
+          + "  gl_FragColor = vec4(r, g, b, 1.0);"
+          + "}"
+      },
+      load: function() {
+        this.time = 0;
+        api.gl.program.avg1Location = api.gl.getUniformLocation(api.gl.program, "avg1");
+        api.gl.program.avg2Location = api.gl.getUniformLocation(api.gl.program, "avg2");
+      },
+      update: function(dt, time) {
+        var fcount = app.analyser.frequencyBinCount;
+        var avg1 = 0, avg2 = 0;
+        for (var i = 0; i < fcount; i++) {
+          var f = api.freqdata[i] / 255;
+          if (i < fcount / 2) {
+            avg1 += f * f;
+          } else {
+            avg2 += f * f;
+          }
+        }
+        avg1 /= fcount;
+        avg2 /= fcount;
+        this.time += (dt * (avg1 + 0.01)) * 50;
+        api.gl.uniform1f(api.gl.program.timeLocation, this.time);
+        api.gl.uniform1f(api.gl.program.avg1Location, 0.2 + (avg1 * 5), 0);
+        api.gl.uniform1f(api.gl.program.avg2Location, 0.2 + (avg2 * 5), 0);
+      },
+      draw: function(w, h, ow, oh) {
         api.gl.uniform2f(api.gl.program.resolutionLocation, w, h);
         api.gl.vertexAttribPointer(api.gl.program.positionLocation, 2, api.gl.FLOAT, false, 0, 0);
 
