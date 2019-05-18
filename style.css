@@ -106,6 +106,7 @@ a:hover {
   display: block;
   padding: 0px;
   padding-left: 20px;
+  clear: both;
 }
 
 .effect-thumbnail {
