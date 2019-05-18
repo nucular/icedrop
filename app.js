@@ -5,12 +5,12 @@
   var app = window.app || {};
   var api = window.api || {};
 
-  app.server = "http://vps.starcatcher.us:9001";
+  app.server = "https://lainon.life/radio/";
   app.thumbmode = false;
 
   // Set up WebAudio, bind events and intervals
   app.load = function() {
-    app.mount = "";
+    app.mount = "/mpd-cyberia.ogg";
     app.effect = {};
 
     // Parse server from search query if possible
